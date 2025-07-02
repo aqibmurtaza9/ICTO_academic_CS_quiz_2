@@ -1,0 +1,3234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Engineering Quiz</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .timer {
+            background: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .question-number {
+            background: #007bff;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .option-btn {
+            margin: 5px 0;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            transform: translateX(5px);
+        }
+
+        .selected {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+
+        .correct-answer {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+
+        .wrong-answer {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .setup-card {
+            background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="quiz-container p-4 mt-5">
+            <div class="setup-card">
+                <h1 class="mb-4">🎯 Software Engineering Quiz</h1>
+                <p class="lead mb-4">Test your knowledge with multiple choice questions</p>
+
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="timeInput" class="form-label fs-5">Set Quiz Time (minutes):</label>
+                            <input type="number" class="form-control form-control-lg text-center" id="timeInput"
+                                value="10" min="1" max="60">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="questionCount" class="form-label fs-5">Number of Questions:</label>
+                            <select class="form-select form-select-lg" id="questionCount">
+                                <option value="10">10 Questions</option>
+                                <option value="20">20 Questions</option>
+                                <option value="30">30 Questions</option>
+                                <option value="50">50 Questions</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-light btn-lg px-5" onclick="startQuiz()">
+                            🚀 Start Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quizScreen" class="quiz-container p-4 mt-3" style="display: none;">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="question-number" id="questionNumber">Question 1</div>
+                <div class="timer" id="timer">10:00</div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress mb-4" style="height: 8px;">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+
+            <!-- Question -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title" id="questionText">Loading question...</h4>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="row" id="optionsContainer">
+                <!-- Options will be loaded here -->
+            </div>
+
+            <!-- Navigation -->
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                    ← Previous
+                </button>
+                <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="resultScreen" class="quiz-container p-4 mt-5" style="display: none;">
+            <div class="result-card">
+                <h1 class="mb-4">🎉 Quiz Completed!</h1>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h2 id="scoreDisplay">0/0</h2>
+                        <p>Score</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 id="percentageDisplay">0%</h2>
+                        <p>Percentage</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2 id="timeUsed">0:00</h2>
+                        <p>Time Used</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h4 id="resultMessage">Good job!</h4>
+                    <button class="btn btn-light btn-lg mt-3" onclick="restartQuiz()">
+                        🔄 Take Quiz Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Quiz Data - Sample questions from the document
+        const quizData = [
+           
+  {
+    "question": "Which software development model is also known as the classic life cycle model?",
+    "options": ["Spiral Model", "Waterfall Model", "Agile Model", "V-Model"],
+    "correct": 1
+  },
+  {
+    "question": "In which model is software developed in incremental, rapid cycles?",
+    "options": ["Spiral", "Agile", "Waterfall", "Prototyping"],
+    "correct": 1
+  },
+  {
+    "question": "What type of testing is done without executing the code?",
+    "options": ["Unit Testing", "Integration Testing", "Static Testing", "Regression Testing"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is a black box testing method?",
+    "options": ["Code walk-through", "Control flow testing", "Equivalence partitioning", "Statement coverage"],
+    "correct": 2
+  },
+  {
+    "question": "Which one is not a requirement type in Software Engineering?",
+    "options": ["Functional", "Non-functional", "Business", "Constructive"],
+    "correct": 3
+  },
+  {
+    "question": "The architectural pattern that separates application logic from user interface is:",
+    "options": ["Client-Server", "Model-View-Controller (MVC)", "Layered Architecture", "Pipe and Filter"],
+    "correct": 1
+  },
+  {
+    "question": "What does a Gantt chart show?",
+    "options": ["Program control", "Project schedule", "Class hierarchy", "Data structure"],
+    "correct": 1
+  },
+  {
+    "question": "Which model is used for risk management in software development?",
+    "options": ["Waterfall", "Spiral", "V-Model", "Agile"],
+    "correct": 1
+  },
+  {
+    "question": "Which of the following is not a software quality attribute?",
+    "options": ["Reliability", "Maintainability", "Portability", "Scalability"],
+    "correct": 3
+  },
+  {
+    "question": "ISO standard for software quality assurance is:",
+    "options": ["ISO 9001", "ISO 9126", "ISO 14000", "ISO 31000"],
+    "correct": 1
+  },
+  {
+    "question": "Software Debugging is known as:",
+    "options": ["identifying the task to be computerized", "creating program code", "creating the algorithm", "finding and correcting errors in the program code"],
+    "correct": 3
+  },
+  {
+    "question": "The word which describes the importance of software design is?",
+    "options": ["Complexity", "Quality", "Efficiency", "Accuracy"],
+    "correct": 1
+  },
+  {
+    "question": "Unit testing is an example of ____________ testing technique.",
+    "options": ["Black Box", "White Box", "Grey Box", "None"],
+    "correct": 1
+  },
+  {
+    "question": "Which of the following is not a business risk?",
+    "options": ["building an excellent product no one wants", "losing senior management support", "lack of documented requirements", "losing budget or personnel commitment"],
+    "correct": 2
+  },
+  {
+    "question": "The waterfall model is also known as:",
+    "options": ["Classic life cycle model", "Incremental model", "Evolutionary model", "Spiral model"],
+    "correct": 0
+  },
+  {
+    "question": "Agile model focuses on:",
+    "options": ["Rigidity", "Customer collaboration", "Complete documentation", "Big design upfront"],
+    "correct": 1
+  },
+  {
+    "question": "Prototyping model is useful when:",
+    "options": ["Requirements are stable", "Requirements are unclear", "Budget is fixed", "Time is limited"],
+    "correct": 1
+  },
+  {
+    "question": "Spiral model was proposed by:",
+    "options": ["Barry Boehm", "Royce", "Brooks", "Pressman"],
+    "correct": 0
+  },
+  {
+    "question": "Which model is based on feedback and rework?",
+    "options": ["Waterfall", "Spiral", "V-Model", "Incremental"],
+    "correct": 1
+  },
+  {
+    "question": "Functional requirements describe:",
+    "options": ["How the system works internally", "What the system should do", "Usability of the system", "Design constraints"],
+    "correct": 1
+  },
+  {
+    "question": "Which is a non-functional requirement?",
+    "options": ["Login process", "Response time", "Report generation", "User input validation"],
+    "correct": 1
+  },
+  {
+    "question": "SRS stands for:",
+    "options": ["Software Requirement Sheet", "Software Requirement Specification", "Standard Requirement Statement", "Software Resource Specification"],
+    "correct": 1
+  },
+  {
+    "question": "Requirements validation ensures:",
+    "options": ["Customer's acceptance", "Code correctness", "Architecture correctness", "Final product testing"],
+    "correct": 0
+  },
+  {
+    "question": "Which of these is not a requirement engineering activity?",
+    "options": ["Elicitation", "Validation", "Design", "Specification"],
+    "correct": 2
+  },
+  {
+    "question": "Coupling means:",
+    "options": ["Degree of cohesion", "Interdependence between modules", "Number of functions in a module", "Size of modules"],
+    "correct": 1
+  },
+  {
+    "question": "Cohesion means:",
+    "options": ["Quality of code", "Independence between modules", "Clarity of code", "Degree to which elements of a module belong together"],
+    "correct": 3
+  },
+  {
+    "question": "Which design principle emphasizes separation of concerns?",
+    "options": ["Coupling", "Cohesion", "Modularity", "Usability"],
+    "correct": 2
+  },
+  {
+    "question": "UML stands for:",
+    "options": ["Unified Modeling Language", "Universal Modeling Language", "Unified Management Language", "Useful Modeling Language"],
+    "correct": 0
+  },
+  {
+    "question": "Which is a behavioral diagram in UML?",
+    "options": ["Class Diagram", "Use Case Diagram", "Sequence Diagram", "Component Diagram"],
+    "correct": 2
+  },
+  {
+    "question": "Unit testing is usually performed by:",
+    "options": ["Clients", "Testers", "Developers", "QA Engineers"],
+    "correct": 2
+  },
+  {
+    "question": "White-box testing is also called:",
+    "options": ["Functional testing", "Structural testing", "Acceptance testing", "Integration testing"],
+    "correct": 1
+  },
+  {
+    "question": "Black-box testing tests:",
+    "options": ["Code logic", "Code structure", "Functional behavior", "Memory leaks"],
+    "correct": 2
+  },
+  {
+    "question": "Regression testing is used to:",
+    "options": ["Test the UI", "Test new features", "Test old features after changes", "Test non-functional aspects"],
+    "correct": 2
+  },
+  {
+    "question": "Which is not a test level?",
+    "options": ["Unit", "Integration", "Functional", "System"],
+    "correct": 2
+  },
+  {
+    "question": "ISO standard for software product quality:",
+    "options": ["ISO 9001", "ISO 9126", "ISO 27001", "ISO 14000"],
+    "correct": 1
+  },
+  {
+    "question": "Cyclomatic complexity measures:",
+    "options": ["Number of lines", "Number of decision paths", "Number of loops", "Number of variables"],
+    "correct": 1
+  },
+  {
+    "question": "Maintainability is:",
+    "options": ["Functional requirement", "Non-functional requirement", "Hardware requirement", "None"],
+    "correct": 1
+  },
+  {
+    "question": "Software reliability means:",
+    "options": ["Always works", "Error-free", "Works under specified conditions", "Low cost"],
+    "correct": 2
+  },
+  {
+    "question": "Quality assurance is:",
+    "options": ["Process-focused", "Product-focused", "Code-focused", "Customer-focused"],
+    "correct": 0
+  },
+  {
+    "question": "A Gantt chart is used for:",
+    "options": ["Cost estimation", "Scheduling", "Coding", "Bug tracking"],
+    "correct": 1
+  },
+  {
+    "question": "PERT stands for:",
+    "options": ["Project Evaluation and Review Technique", "Planning Execution and Resource Technique", "Performance Estimation Resource Technique", "None of the above"],
+    "correct": 0
+  },
+  {
+    "question": "Which of the following is not a project management activity?",
+    "options": ["Scheduling", "Risk management", "Coding", "Resource allocation"],
+    "correct": 2
+  },
+  {
+    "question": "The first activity in project planning is:",
+    "options": ["Risk analysis", "Cost estimation", "Feasibility study", "Budgeting"],
+    "correct": 2
+  },
+  {
+    "question": "Risk management is primarily:",
+    "options": ["A design activity", "A monitoring activity", "A preventive activity", "An optional activity"],
+    "correct": 2
+  },
+  {
+    "question": "Corrective maintenance deals with:",
+    "options": ["Adapting to a new environment", "Fixing bugs", "Improving performance", "Adding new features"],
+    "correct": 1
+  },
+  {
+    "question": "Perfective maintenance means:",
+    "options": ["Fixing defects", "Improving performance or maintainability", "Adapting to new environment", "Rewriting the whole software"],
+    "correct": 1
+  },
+  {
+    "question": "Which maintenance is done when the software is moved to a different platform?",
+    "options": ["Corrective", "Adaptive", "Preventive", "Perfective"],
+    "correct": 1
+  },
+  {
+    "question": "Software re-engineering means:",
+    "options": ["New software", "Process design", "Reverse engineering and modification", "Testing only"],
+    "correct": 2
+  },
+  {
+    "question": "Preventive maintenance aims to:",
+    "options": ["Fix bugs", "Add new features", "Avoid future problems", "Test for usability"],
+    "correct": 2
+  },
+  {
+    "question": "SCM stands for:",
+    "options": ["Software Control Management", "Software Configuration Management", "System Control Mechanism", "Software Coding Methodology"],
+    "correct": 1
+  },
+            
+ 
+  {
+    "question": "What is the purpose of the “ping” command in networking?",
+    "options": [
+      "Test internet speed",
+      "Send messages to friends",
+      "Check if a host is reachable and measure round-trip time",
+      "Broadcast messages to all devices on a network"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the main advantage of using a NoSQL database over a relational database?",
+    "options": [
+      "Better support for complex queries",
+      "Strong data consistency",
+      "Ability to handle large amounts of unstructured data",
+      "Strict schema definition"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What does the acronym API stand for in the context of web development?",
+    "options": [
+      "Application Programming Interface",
+      "Advanced Protocol Interface",
+      "Automated Program Integration",
+      "Application Process Interface"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "In cybersecurity, what is a “firewall”?",
+    "options": [
+      "A physical barrier to prevent unauthorized access",
+      "A software or hardware device that filters network traffic",
+      "A type of malware",
+      "A tool for encrypting files"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which HTTP status code indicates a successful request?",
+    "options": [
+      "200 OK",
+      "404 Not Found",
+      "500 Internal Server Error",
+      "302 Found (Moved Temporarily)"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "What is the purpose of a CSS (Cascading Style Sheet) framework in web development?",
+    "options": [
+      "To secure websites from cyber threats",
+      "To provide a standardized layout and design for web pages",
+      "To manage server configurations",
+      "To create dynamic content"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which programming language is commonly used for building Android applications?",
+    "options": ["Swift", "Kotlin", "Java", "Objective-C"],
+    "correct": 1
+  },
+  {
+    "question": "What is the purpose of the “grep” command in Unix-like operating systems?",
+    "options": [
+      "Search for files in a directory",
+      "Display system information",
+      "Find and manipulate text within files",
+      "Create new files"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "In the context of databases, what is ACID?",
+    "options": [
+      "A programming language",
+      "A database management system",
+      "A set of properties to ensure reliable processing of database transactions",
+      "An encryption algorithm"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What does the term “DNSSEC” stand for in networking?",
+    "options": [
+      "Domain Name System Security Extensions",
+      "Digital Network Security Standard",
+      "Dynamic Name Server Encryption Control",
+      "Distributed Network Security and Encryption"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "What does the acronym URL stand for?",
+    "options": [
+      "Universal Resource Locator",
+      "Uniform Resource Locator",
+      "Unified Resource Locator",
+      "Unique Resource Locator"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which programming paradigm is associated with object-oriented programming (OOP)?",
+    "options": [
+      "Procedural",
+      "Functional",
+      "Object-oriented",
+      "Declarative"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the purpose of a compiler?",
+    "options": [
+      "Execute code line by line",
+      "Convert source code into machine code",
+      "Debug code",
+      "Manage memory allocation"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which protocol is commonly used for sending emails?",
+    "options": ["HTTP", "FTP", "SMTP", "TCP"],
+    "correct": 2
+  },
+  {
+    "question": "What is the role of RAM (Random Access Memory) in a computer?",
+    "options": [
+      "Long-term storage of data",
+      "Temporary storage for running programs and data",
+      "Displaying graphics",
+      "Managing network connections"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which data structure organizes data in a hierarchy with a top-down, tree-like structure?",
+    "options": ["Array", "Linked List", "Stack", "Tree"],
+    "correct": 3
+  },
+  {
+    "question": "What does the term “API” stand for in software development?",
+    "options": [
+      "Application Programming Interface",
+      "Advanced Program Integration",
+      "Automated Process Interface",
+      "Algorithmic Programming Instruction"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "In web development, what does CSS stand for?",
+    "options": [
+      "Counter Style Sheet",
+      "Cascading Style Sheet",
+      "Computer Style Sheet",
+      "Creative Style Sheet"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the function of a DNS (Domain Name System)?",
+    "options": [
+      "Encrypting data transmissions",
+      "Resolving domain names to IP addresses",
+      "Managing network security",
+      "Hosting websites"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which database model uses a table-based structure with rows and columns?",
+    "options": [
+      "Hierarchical",
+      "Relational",
+      "NoSQL",
+      "Object-Oriented"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary function of an operating system?",
+    "options": [
+      "Run applications",
+      "Manage hardware resources",
+      "Design websites",
+      "Create databases"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which type of programming language is JavaScript?",
+    "options": [
+      "Compiled language",
+      "Interpreted language",
+      "Assembly language",
+      "Machine language"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What does the acronym VPN stand for?",
+    "options": [
+      "Virtual Private Network",
+      "Very Private Network",
+      "Visual Processing Node",
+      "Virtual Processor Network"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "In cybersecurity, what is phishing?",
+    "options": [
+      "A type of fishing",
+      "Sending malicious emails to trick individuals into revealing sensitive information",
+      "A form of physical security",
+      "A programming language"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which data structure follows the Last In, First Out (LIFO) principle?",
+    "options": ["Queue", "Stack", "Linked List", "Tree"],
+    "correct": 1
+  },
+  {
+    "question": "What does HTML stand for?",
+    "options": [
+      "Hyper Text Makeup Language",
+      "Hyper Transfer Markup Language",
+      "Hyper Text Markup Language",
+      "Hyper Transfer Makeup Language"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which programming language is known for its high performance and is commonly used for building system-level software?",
+    "options": ["Python", "Java", "C++", "JavaScript"],
+    "correct": 2
+  },
+  {
+    "question": "What is the purpose of a firewall in network security?",
+    "options": [
+      "To block internet access",
+      "To monitor computer performance",
+      "To prevent unauthorized access and control data traffic",
+      "To encrypt data transmissions"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "In the context of databases, what does SQL stand for?",
+    "options": [
+      "Structured Query Language",
+      "Simple Query Language",
+      "Scripted Question Language",
+      "System Query Language"
+    ],
+    "correct": 0
+  },
+  {
+    "question": "What is the purpose of an IP address?",
+    "options": [
+      "To identify a website",
+      "To identify a device on a network",
+      "To secure data transmission",
+      "To store files"
+    ],
+    "correct": 1
+  },
+
+  {
+    "question": "If the 28th day of a month is Sunday, then what will be the 2nd day of the next week?",
+    "options": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+    "correct": 1
+  },
+  {
+    "question": "If yesterday was Sunday, then what day will it be the day after tomorrow?",
+    "options": ["Monday", "Tuesday", "Wednesday", "Thursday"],
+    "correct": 2
+  },
+  {
+    "question": "If the 4th day of a month is Friday, then what day will the 19th fall on?",
+    "options": ["Friday", "Saturday", "Sunday", "Monday"],
+    "correct": 1
+  },
+  {
+    "question": "What is 90% of 90?",
+    "options": ["72", "81", "90", "95"],
+    "correct": 1
+  },
+  {
+    "question": "What is one third of 10% of 90?",
+    "options": ["2", "3", "4", "5"],
+    "correct": 1
+  },
+  {
+    "question": "What is one third of 10% of 120?",
+    "options": ["3", "4", "5", "6"],
+    "correct": 1
+  },
+  {
+    "question": "How many months have 30 days in a year?",
+    "options": ["5", "6", "7", "8"],
+    "correct": 2
+  },
+  {
+    "question": "If one man writes 5 papers in 5 minutes, how long does it take to write 1 paper?",
+    "options": ["1 minute", "2 minutes", "3 minutes", "5 minutes"],
+    "correct": 0
+  },
+  {
+    "question": "Out of 500 students, 360 are boys. What percentage are girls?",
+    "options": ["20%", "25%", "28%", "30%"],
+    "correct": 2
+  },
+  {
+    "question": "What is 2 + 2 ÷ 2?",
+    "options": ["1", "2", "3", "4"],
+    "correct": 2
+  },
+  {
+    "question": "What is a quarter of one tenth of 120?",
+    "options": ["1", "2", "3", "4"],
+    "correct": 2
+  },
+  {
+    "question": "There are 30 passengers in a bus. If 2/3 are men, what percentage are women?",
+    "options": ["25%", "30%", "33.33%", "40%"],
+    "correct": 2
+  },
+  {
+    "question": "Ali bought a pen for Rs 30 and sold it for Rs 40. What is the profit percentage?",
+    "options": ["25%", "30%", "33.33%", "40%"],
+    "correct": 2
+  },
+  {
+    "question": "Which one is different from the others?",
+    "options": ["Angle", "Rectangle", "Square", "Hexagon"],
+    "correct": 0
+  },
+  {
+    "question": "Which one is different from the others?",
+    "options": ["Cricket", "Football", "Tennis", "Baseball"],
+    "correct": 1
+  },
+  {
+    "question": "A man travels 90 km in 1 hour and 40 minutes. How much time will he take to cover 1 km?",
+    "options": ["0.9 min", "1 min", "1.2 min", "1.5 min"],
+    "correct": 0
+  },
+  {
+    "question": "What is 80% of 90?",
+    "options": ["64", "72", "80", "85"],
+    "correct": 1
+  },
+  {
+    "question": "In a class of 1500 students, 1200 are present. What is the percentage of attendance?",
+    "options": ["75%", "80%", "85%", "90%"],
+    "correct": 1
+  },
+  {
+    "question": "If the second day of a month is Monday, what will the 12th be?",
+    "options": ["Tuesday", "Wednesday", "Friday", "Saturday"],
+    "correct": 2
+  },
+  {
+    "question": "If the 2nd day of a month is Sunday, what will the 23rd be?",
+    "options": ["Saturday", "Sunday", "Monday", "Tuesday"],
+    "correct": 1
+  },
+  {
+    "question": "What is (2 + 2)?",
+    "options": ["2", "4", "6", "8"],
+    "correct": 3
+  },
+  {
+    "question": "What is one third of 120?",
+    "options": ["30", "40", "50", "60"],
+    "correct": 1
+  },
+  {
+    "question": "If one dozen pencils cost Rs 27, what is the cost of 4 pencils?",
+    "options": ["Rs 6", "Rs 7", "Rs 8", "Rs 9"],
+    "correct": 3
+  },
+  {
+    "question": "Ali moves north, turns left twice. Which direction is he facing now?",
+    "options": ["North", "East", "South", "West"],
+    "correct": 2
+  },
+  {
+    "question": "Out of 500 students, 340 are present. What percentage are absent?",
+    "options": ["28%", "30%", "32%", "35%"],
+    "correct": 2
+  },
+  {
+    "question": "A train moving at 90 km/h covers how much distance in 12 minutes?",
+    "options": ["12 km", "15 km", "18 km", "20 km"],
+    "correct": 2
+  },
+  {
+    "question": "A man covers 20 km in 1 hour and 40 minutes. How long does he take per km?",
+    "options": ["0.1 min", "0.2 min", "0.3 min", "0.5 min"],
+    "correct": 1
+  },
+
+  {
+    "question": "Full form of 'OS' is?",
+    "options": ["Order of significance", "Operating system", "Open software", "Optical Sensor"],
+    "correct": 1
+  },
+  {
+    "question": "The ribbon is used in?",
+    "options": ["Laser Printer", "Plotter", "Ink-jet printer", "Dot Matrix printer"],
+    "correct": 3
+  },
+  {
+    "question": "Address book contains?",
+    "options": ["Email address", "Phone numbers", "People Names", "All of the above"],
+    "correct": 3
+  },
+  {
+    "question": "Full form of 'DOCOMO'?",
+    "options": ["Do Connect over Mobile", "Do Communications Over the Mobile network", "Dongle Communication Over Mobile", "Do Communication Or More"],
+    "correct": 1
+  },
+  {
+    "question": "Joystick is used to?",
+    "options": ["Move cursor on the screen", "Computer games", "Both a and b", "None of these"],
+    "correct": 2
+  },
+  {
+    "question": "A DNS translates a domain name into what?",
+    "options": ["Binary", "Hex", "IP", "URL"],
+    "correct": 2
+  },
+  {
+    "question": "When was the first e-mail sent?",
+    "options": ["1963", "1969", "1971", "1974"],
+    "correct": 2
+  },
+  {
+    "question": "What type of memory is volatile?",
+    "options": ["Cache", "RAM", "ROM", "Hard Drive"],
+    "correct": 1
+  },
+  {
+    "question": "Which of the below is not an iPhone 4 feature?",
+    "options": ["4G", "Front facing camera", "HD recording", "Multitasking"],
+    "correct": 0
+  },
+  {
+    "question": "Main memory is also known as?",
+    "options": ["Auxiliary memory", "Primary memory", "Secondary memory", "None of above"],
+    "correct": 1
+  },
+  {
+    "question": "A presentation means?",
+    "options": ["Display of products", "Explaining the utility of products", "A gift", "Display of communication or skills"],
+    "correct": 1
+  },
+  {
+    "question": "The term CRM means?",
+    "options": ["Customer Relationship Management", "Customer Retention Manager", "Customer's Relative Meet", "Channel Root Market"],
+    "correct": 0
+  },
+  {
+    "question": "Why would a switch be used in a network in preference to a HUB?",
+    "options": ["To reduce the network traffic", "To prevent the spread of all viruses", "To connect a computer directly to the internet", "To manage password security at the work station"],
+    "correct": 0
+  },
+  {
+    "question": "What should be done to successfully convert the format of an image from BMP to JPEG?",
+    "options": ["Compress the file", "Rename the image", "Use the save as command", "Change the image file extension"],
+    "correct": 2
+  },
+  {
+    "question": "A company regularly updates a user reference guide. Some staff are confused about which printed document is the most current. What feature should be included in the reference guide to eliminate this confusion?",
+    "options": ["Date printed", "Version number", "Author's name", "Copyright information"],
+    "correct": 1
+  },
+  {
+    "question": "The term associated with the processing of comparison speed is?",
+    "options": ["FFTS", "MPG", "MIPS", "CPS"],
+    "correct": 2
+  },
+  {
+    "question": "The data from a spreadsheet needs to be imported into a database package. Which file format would be the most appropriate when saving the spreadsheet file?",
+    "options": ["CSV", "HTML", "PDF", "RTF"],
+    "correct": 0
+  },
+  {
+    "question": "For reproducing sound, the CD audio player uses a?",
+    "options": ["Quartz Crystal", "Titanium Needle", "Laser Beam", "Barium Titanium Ceramic"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following would indicate that the motherboard battery has failed?",
+    "options": ["Operating system passwords are lost", "Files on the hard disk are lost and corrupted", "Hardware settings, including virtual memory reverts to default values", "Hardware settings, including the current date and time reverts to default values"],
+    "correct": 3
+  },
+  {
+    "question": "Which of the following is essential component of communication cycle?",
+    "options": ["A message", "An interpreter", "An email account", "An internet connection"],
+    "correct": 0
+  },
+  {
+    "question": "Which country created the most used networking software in 1980's?",
+    "options": ["Sun", "IBM", "Novell", "Microsoft"],
+    "correct": 2
+  },
+  {
+    "question": "In what year was the @ chosen for its use in email address?",
+    "options": ["1972", "1976", "1980", "1984"],
+    "correct": 0
+  },
+  {
+    "question": "Which American computer company is called Big Blue?",
+    "options": ["IBM", "Compaq Corp", "Microsoft", "Tandy Svenson"],
+    "correct": 0
+  },
+  {
+    "question": "Who is credited with the idea of using punch cards to control patterns in a weaving machine?",
+    "options": ["Pascal", "Hollerith", "Babbage", "Jacquard"],
+    "correct": 3
+  },
+  {
+    "question": "What does SSL stand for?",
+    "options": ["System socket layer", "Secure system login", "Secure socket layer", "Secure system login"],
+    "correct": 2
+  },
+  {
+    "question": "What is MAC?",
+    "options": ["A computer made by Apple", "Memory address corruption", "Mediocre Apple Computer", "Media Access Control"],
+    "correct": 3
+  },
+  {
+    "question": "What does PPTP stand for?",
+    "options": ["Point to Point Transmission Protocol", "Point to Point Transfer Protocol", "Point to Point Tunneling Protocol", "Point to Point Traffic Protocol"],
+    "correct": 2
+  },
+  
+  {
+    "question": "Which of the following is not a characteristic of a real-time operating system?",
+    "options": ["Deterministic behavior", "High throughput", "Low latency", "Predictable response time"],
+    "correct": 2
+  },
+  {
+    "question": "In software engineering, which coupling type is the most desirable for modular design?",
+    "options": ["Content coupling", "Common coupling", "Data coupling", "Control coupling"],
+    "correct": 3
+  },
+  {
+    "question": "Which machine learning technique is best suited for detecting anomalies in a network security system?",
+    "options": ["Supervised learning", "Reinforcement learning", "Unsupervised learning", "Semi-supervised learning"],
+    "correct": 3
+  },
+  {
+    "question": "In cybersecurity, what does the CVE (Common Vulnerabilities and Exposures) database provide?",
+    "options": ["A list of encrypted passwords", "A catalog of known security vulnerabilities", "A repository for cryptographic keys", "A secure sandbox for testing malware"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is the biggest challenge in implementing artificial neural networks?",
+    "options": ["Lack of data", "Overfitting", "Slow execution speed", "Difficulty in coding"],
+    "correct": 2
+  },
+  {
+    "question": "In distributed computing, which consistency model ensures all nodes eventually see the same data but not necessarily at the same time?",
+    "options": ["Strong consistency", "Eventual consistency", "Causal consistency", "Linearizability"],
+    "correct": 2
+  },
+  {
+    "question": "Which algorithm is most suitable for detecting zero-day malware threats?",
+    "options": ["Signature-based detection", "Heuristic analysis", "Rule-based filtering", "Whitelist approach"],
+    "correct": 2
+  },
+  {
+    "question": "In object-oriented programming, which principle allows a subclass to define specific behavior while inheriting from a parent class?",
+    "options": ["Encapsulation", "Abstraction", "Polymorphism", "Inheritance"],
+    "correct": 3
+  },
+  {
+    "question": "Which of the following best describes a Generative Adversarial Network (GAN)?",
+    "options": ["A supervised learning algorithm", "A pair of networks competing against each other", "A reinforcement learning model", "A deterministic rule-based system"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary reason buffer overflow attacks occur?",
+    "options": ["Improper memory allocation", "Incorrect firewall configuration", "Weak passwords", "Slow processor speed"],
+    "correct": 1
+  },
+  {
+    "question": "Which scheduling algorithm is most suitable for real-time systems?",
+    "options": ["Round Robin", "First Come First Serve (FCFS)", "Shortest Job Next", "Earliest Deadline First (EDF)"],
+    "correct": 4
+  },
+  {
+    "question": "Which programming paradigm is most commonly used in functional programming languages?",
+    "options": ["Procedural programming", "Object-oriented programming", "Declarative programming", "Event-driven programming"],
+    "correct": 3
+  },
+  {
+    "question": "In cybersecurity, what does the principle of least privilege (PoLP) mean?",
+    "options": ["Users should have admin access at all times", "Users should be granted only the minimum access needed to perform their tasks", "All users should have equal access rights", "Security teams should not monitor privilege levels"],
+    "correct": 2
+  },
+  {
+    "question": "In machine learning, which activation function is commonly used to prevent the vanishing gradient problem?",
+    "options": ["Sigmoid", "ReLU", "Tanh", "Softmax"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary role of the kernel in an operating system?",
+    "options": ["Managing user applications", "Controlling hardware resources and system processes", "Providing network security", "Running antivirus programs"],
+    "correct": 2
+  },
+  {
+    "question": "Which type of cyber attack involves sending fake DNS responses to redirect users to malicious sites?",
+    "options": ["Phishing", "DNS spoofing", "Man-in-the-middle attack", "SQL injection"],
+    "correct": 2
+  },
+  {
+    "question": "In deep learning, which type of neural network is best suited for sequence prediction tasks such as speech recognition?",
+    "options": ["Convolutional Neural Networks (CNN)", "Feedforward Neural Networks", "Recurrent Neural Networks (RNN)", "Radial Basis Function Networks"],
+    "correct": 3
+  },
+  {
+    "question": "In software architecture, what is the main benefit of a microservices architecture over a monolithic architecture?",
+    "options": ["Lower development cost", "Higher performance", "Better scalability and flexibility", "Simpler deployment"],
+    "correct": 3
+  },
+  {
+    "question": "In cryptography, which of the following best describes asymmetric encryption?",
+    "options": ["Uses the same key for encryption and decryption", "Uses different keys for encryption and decryption", "Does not require a key", "Encrypts only text-based data"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is a common attack on machine learning models?",
+    "options": ["Overclocking attack", "Model poisoning", "Memory leakage", "Kernel panic"],
+    "correct": 2
+  },
+  {
+    "question": "Which software development model is best suited for high-risk projects with evolving requirements?",
+    "options": ["Waterfall Model", "V-Model", "Spiral Model", "RAD Model"],
+    "correct": 3
+  },
+  {
+    "question": "What is the primary purpose of data normalization in databases?",
+    "options": ["Improve query execution speed", "Reduce redundancy and improve data integrity", "Increase storage efficiency", "Optimize indexing performance"],
+    "correct": 2
+  },
+  {
+    "question": "In cryptography, what is the main advantage of elliptic curve cryptography (ECC) over RSA?",
+    "options": ["Faster encryption but weaker security", "Smaller key sizes with the same level of security", "Easier implementation in software", "Eliminates the need for key exchange"],
+    "correct": 2
+  },
+  {
+    "question": "In machine learning, what is the purpose of dropout in deep neural networks?",
+    "options": ["Reduce training time", "Prevent overfitting", "Improve gradient descent convergence", "Increase model complexity"],
+    "correct": 2
+  },
+  {
+    "question": "Which attack is commonly used to bypass two-factor authentication (2FA)?",
+    "options": ["Man-in-the-middle attack", "Brute force attack", "Cross-site scripting", "Session hijacking"],
+    "correct": 1
+  },
+  {
+    "question": "In software engineering, which type of testing ensures that a newly added module does not break existing functionality?",
+    "options": ["Unit Testing", "Regression Testing", "Integration Testing", "Stress Testing"],
+    "correct": 2
+  },
+  {
+    "question": "In blockchain technology, what is the function of a Merkle tree?",
+    "options": ["Enhances encryption of transaction data", "Efficiently verifies transactions without storing the entire blockchain", "Speeds up mining operations", "Improves consensus mechanisms"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following machine learning techniques is best suited for high-dimensional feature selection?",
+    "options": ["Principal Component Analysis (PCA)", "k-Nearest Neighbors", "Decision Trees", "Naïve Bayes"],
+    "correct": 1
+  },
+  {
+    "question": "In cybersecurity, what does a side-channel attack target?",
+    "options": ["Exploiting software vulnerabilities", "Extracting information from hardware behavior", "Intercepting network packets", "Cracking hashed passwords"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary role of backpropagation in neural networks?",
+    "options": ["Initializing weights", "Calculating loss function", "Adjusting weights based on gradient descent", "Selecting the activation function"],
+    "correct": 3
+  },
+  {
+    "question": "Which data structure is most commonly used to implement a priority queue?",
+    "options": ["Stack", "Linked List", "Heap", "Hash Table"],
+    "correct": 3
+  },
+  {
+    "question": "In reinforcement learning, what is the exploration-exploitation trade-off?",
+    "options": ["Choosing between learning and forgetting", "Balancing between trying new actions and optimizing known ones", "Selecting between supervised and unsupervised learning", "Managing dataset size for better training"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary goal of adversarial attacks in deep learning?",
+    "options": ["Enhance model accuracy", "Modify input data to mislead AI predictions", "Reduce model size for efficiency", "Improve feature extraction"],
+    "correct": 2
+  },
+  {
+    "question": "In cybersecurity, which protocol is most vulnerable to a SYN flood attack?",
+    "options": ["UDP", "TCP", "ICMP", "FTP"],
+    "correct": 2
+  },
+  {
+    "question": "What is the main challenge of using blockchain in enterprise applications?",
+    "options": ["Scalability", "Data privacy", "Interoperability", "Energy consumption"],
+    "correct": 1
+  },
+  {
+    "question": "Which term is associated with the principle of keeping software components loosely connected?",
+    "options": ["Coupling", "Cohesion", "Modularity", "Inheritance"],
+    "correct": 3
+  },
+  {
+    "question": "Which database type is most suitable for hierarchical data representation?",
+    "options": ["Relational Database", "Graph Database", "NoSQL Database", "Object-Oriented Database"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following cloud service models offers infrastructure as a service?",
+    "options": ["SaaS", "PaaS", "IaaS", "FaaS"],
+    "correct": 3
+  },
+  {
+    "question": "Which of the following is the most secure form of password storage?",
+    "options": ["Plaintext", "SHA-256", "Salted Hash", "Base64 Encoding"],
+    "correct": 3
+  },
+  {
+    "question": "Which programming language is most commonly used for statistical computing and data analysis?",
+    "options": ["Python", "R", "Java", "C++"],
+    "correct": 2
+  },
+      {
+      question: "Which of the following is not a characteristic of a real-time operating system?",
+      options: ["Deterministic behavior", "High throughput", "Low latency", "Predictable response time"],
+      correct: 2
+    },
+    {
+      question: "In software engineering, which coupling type is the most desirable for modular design?",
+      options: ["Content coupling", "Common coupling", "Data coupling", "Control coupling"],
+      correct: 3
+    },
+    {
+      question: "Which machine learning technique is best suited for detecting anomalies in a network security system?",
+      options: ["Supervised learning", "Reinforcement learning", "Unsupervised learning", "Semi-supervised learning"],
+      correct: 3
+    },
+    {
+      question: "In cybersecurity, what does the CVE (Common Vulnerabilities and Exposures) database provide?",
+      options: ["A list of encrypted passwords", "A catalog of known security vulnerabilities", "A repository for cryptographic keys", "A secure sandbox for testing malware"],
+      correct: 2
+    },
+    {
+      question: "Which of the following is the biggest challenge in implementing artificial neural networks?",
+      options: ["Lack of data", "Overfitting", "Slow execution speed", "Difficulty in coding"],
+      correct: 2
+    },
+    {
+      question: "In distributed computing, which consistency model ensures all nodes eventually see the same data but not necessarily at the same time?",
+      options: ["Strong consistency", "Eventual consistency", "Causal consistency", "Linearizability"],
+      correct: 2
+    },
+    {
+      question: "Which algorithm is most suitable for detecting zero-day malware threats?",
+      options: ["Signature-based detection", "Heuristic analysis", "Rule-based filtering", "Whitelist approach"],
+      correct: 2
+    },
+    {
+      question: "In object-oriented programming, which principle allows a subclass to define specific behavior while inheriting from a parent class?",
+      options: ["Encapsulation", "Abstraction", "Polymorphism", "Inheritance"],
+      correct: 3
+    },
+    {
+      question: "Which of the following best describes a Generative Adversarial Network (GAN)?",
+      options: ["A supervised learning algorithm", "A pair of networks competing against each other", "A reinforcement learning model", "A deterministic rule-based system"],
+      correct: 2
+    },
+    {
+      question: "What is the primary reason buffer overflow attacks occur?",
+      options: ["Improper memory allocation", "Incorrect firewall configuration", "Weak passwords", "Slow processor speed"],
+      correct: 1
+    },
+    {
+      question: "Which scheduling algorithm is most suitable for real-time systems?",
+      options: ["Round Robin", "First Come First Serve (FCFS)", "Shortest Job Next", "Earliest Deadline First (EDF)"],
+      correct: 4
+    },
+    {
+      question: "Which programming paradigm is most commonly used in functional programming languages?",
+      options: ["Procedural programming", "Object-oriented programming", "Declarative programming", "Event-driven programming"],
+      correct: 3
+    },
+    {
+      question: "In cybersecurity, what does the principle of least privilege (PoLP) mean?",
+      options: ["Users should have admin access at all times", "Users should be granted only the minimum access needed to perform their tasks", "All users should have equal access rights", "Security teams should not monitor privilege levels"],
+      correct: 2
+    },
+    {
+      question: "In machine learning, which activation function is commonly used to prevent the vanishing gradient problem?",
+      options: ["Sigmoid", "ReLU", "Tanh", "Softmax"],
+      correct: 2
+    },
+    {
+      question: "What is the primary role of the kernel in an operating system?",
+      options: ["Managing user applications", "Controlling hardware resources and system processes", "Providing network security", "Running antivirus programs"],
+      correct: 2
+    },
+    {
+      question: "Which type of cyber attack involves sending fake DNS responses to redirect users to malicious sites?",
+      options: ["Phishing", "DNS spoofing", "Man-in-the-middle attack", "SQL injection"],
+      correct: 2
+    },
+    {
+      question: "In deep learning, which type of neural network is best suited for sequence prediction tasks such as speech recognition?",
+      options: ["Convolutional Neural Networks (CNN)", "Feedforward Neural Networks", "Recurrent Neural Networks (RNN)", "Radial Basis Function Networks"],
+      correct: 3
+    },
+    {
+      question: "In software architecture, what is the main benefit of a microservices architecture over a monolithic architecture?",
+      options: ["Lower development cost", "Higher performance", "Better scalability and flexibility", "Simpler deployment"],
+      correct: 3
+    },
+    {
+      question: "In cryptography, which of the following best describes asymmetric encryption?",
+      options: ["Uses the same key for encryption and decryption", "Uses different keys for encryption and decryption", "Does not require a key", "Encrypts only text-based data"],
+      correct: 2
+    },
+    {
+      question: "Which of the following is a common attack on machine learning models?",
+      options: ["Overclocking attack", "Model poisoning", "Memory leakage", "Kernel panic"],
+      correct: 2
+    },
+    {
+      question: "Which software development model is best suited for high-risk projects with evolving requirements?",
+      options: ["Waterfall Model", "V-Model", "Spiral Model", "RAD Model"],
+      correct: 3
+    },
+    {
+      question: "What is the primary purpose of data normalization in databases?",
+      options: ["Improve query execution speed", "Reduce redundancy and improve data integrity", "Increase storage efficiency", "Optimize indexing performance"],
+      correct: 2
+    },
+    {
+      question: "In cryptography, what is the main advantage of elliptic curve cryptography (ECC) over RSA?",
+      options: ["Faster encryption but weaker security", "Smaller key sizes with the same level of security", "Easier implementation in software", "Eliminates the need for key exchange"],
+      correct: 2
+    },
+    {
+      question: "In machine learning, what is the purpose of dropout in deep neural networks?",
+      options: ["Reduce training time", "Prevent overfitting", "Improve gradient descent convergence", "Increase model complexity"],
+      correct: 2
+    },
+    {
+      question: "Which attack is commonly used to bypass two-factor authentication (2FA)?",
+      options: ["Man-in-the-middle attack", "Brute force attack", "Cross-site scripting", "Session hijacking"],
+      correct: 1
+    },
+    {
+      question: "In software engineering, which type of testing ensures that a newly added module does not break existing functionality?",
+      options: ["Unit Testing", "Regression Testing", "Integration Testing", "Stress Testing"],
+      correct: 2
+    },
+    {
+      question: "In blockchain technology, what is the function of a Merkle tree?",
+      options: ["Enhances encryption of transaction data", "Efficiently verifies transactions without storing the entire blockchain", "Speeds up mining operations", "Improves consensus mechanisms"],
+      correct: 2
+    },
+    {
+      question: "Which of the following machine learning techniques is best suited for high-dimensional feature selection?",
+      options: ["Principal Component Analysis (PCA)", "k-Nearest Neighbors", "Decision Trees", "Naïve Bayes"],
+      correct: 1
+    },
+    {
+      question: "In cybersecurity, what does a side-channel attack target?",
+      options: ["Exploiting software vulnerabilities", "Extracting information from hardware behavior", "Intercepting network packets", "Cracking hashed passwords"],
+      correct: 2
+    },
+    {
+      question: "What is the primary role of backpropagation in neural networks?",
+      options: ["Initializing weights", "Calculating loss function", "Adjusting weights based on gradient descent", "Selecting the activation function"],
+      correct: 3
+    },
+    {
+      question: "Which data structure is most commonly used to implement a priority queue?",
+      options: ["Stack", "Linked List", "Heap", "Hash Table"],
+      correct: 3
+    },
+    {
+      question: "In reinforcement learning, what is the exploration-exploitation trade-off?",
+      options: ["Choosing between learning and forgetting", "Balancing between trying new actions and optimizing known ones", "Selecting between supervised and unsupervised learning", "Managing dataset size for better training"],
+      correct: 2
+    },
+    {
+      question: "What is the primary goal of adversarial attacks in deep learning?",
+      options: ["Enhance model accuracy", "Modify input data to mislead AI predictions", "Reduce model size for efficiency", "Improve feature extraction"],
+      correct: 2
+    },
+    {
+      question: "In cybersecurity, which protocol is most vulnerable to a SYN flood attack?",
+      options: ["UDP", "TCP", "ICMP", "FTP"],
+      correct: 2
+    },
+    {
+      question: "What is the main challenge of quantum computing in cybersecurity?",
+      options: ["Limited memory", "Threat to traditional encryption methods", "High energy consumption", "Lack of programming languages"],
+      correct: 2
+    },
+    {
+      question: "In software design, what is the main benefit of lazy loading?",
+      options: ["Reduces initial load time by deferring object creation", "Speeds up garbage collection", "Ensures all resources are loaded at startup", "Improves multi-threading performance"],
+      correct: 1
+    },
+    {
+      question: "Which deep learning architecture is best for image segmentation?",
+      options: ["CNN", "RNN", "U-Net", "GAN"],
+      correct: 3
+    },
+    {
+      question: "What is the purpose of a honeypot in cybersecurity?",
+      options: ["Protect sensitive data using encryption", "Attract and detect attackers by simulating a vulnerable system", "Prevent malware execution", "Automatically patch vulnerabilities"],
+      correct: 2
+    },
+    {
+      question: "In cryptography, what does Perfect Forward Secrecy (PFS) ensure?",
+      options: ["Each session key is independent and not derived from previous keys", "Encryption keys never expire", "Only symmetric encryption is used", "Prevents brute-force attacks"],
+      correct: 1
+    },
+    {
+      question: "What does CWE (Common Weakness Enumeration) classify?",
+      options: ["Cryptographic algorithms", "Software vulnerabilities", "Cybercrime laws", "Data privacy regulations"],
+      correct: 2
+    },
+    {
+      question: "Which learning algorithm is best for detecting credit card fraud in real time?",
+      options: ["Support Vector Machine", "Random Forest", "Logistic Regression", "Anomaly Detection"],
+      correct: 4
+    },
+    {
+      question: "What is the main challenge in federated learning?",
+      options: ["Data heterogeneity", "Privacy and communication overhead", "Lack of compute power", "Model compatibility"],
+      correct: 2
+    },
+    {
+      question: "What is the advantage of Bayesian Networks in AI?",
+      options: ["They are fast", "They scale well", "Handle uncertainty in decision-making", "Require less data"],
+      correct: 3
+    },
+    {
+      question: "What is a timing attack in cryptography?",
+      options: ["Extracts information based on encryption processing time", "A brute-force method", "Exploit weak passwords", "Use social engineering"],
+      correct: 1
+    },
+    {
+      question: "Which cybersecurity tool detects suspicious behavior on a network?",
+      options: ["Firewall", "Antivirus", "Honeypot", "Intrusion Detection System (IDS)"],
+      correct: 4
+    },
+    {
+      question: "What is Secure Boot designed to prevent?",
+      options: ["Malware installation", "Unauthorized firmware execution", "Boot sector corruption", "OS tampering"],
+      correct: 2
+    },
+    {
+      question: "What is a GAN's discriminator responsible for?",
+      options: ["Generating fake samples", "Identifying fake samples from real ones", "Training the generator", "Optimizing loss function"],
+      correct: 2
+    },
+    {
+      question: "What is entropy in information security?",
+      options: ["Measure of randomness in data", "Type of encryption", "Network bandwidth usage", "CPU utilization"],
+      correct: 1
+    },
+    {
+      question: "What does RBAC (Role-Based Access Control) enforce?",
+      options: ["Access based on location", "Access permissions based on user roles", "Time-based access", "IP-based access"],
+      correct: 2
+    },
+    {
+      question: "What is the primary goal of a worm in cybersecurity?",
+      options: ["Steal data", "Destroy files", "Delete OS", "Self-replicate and spread across systems"],
+      correct: 4
+    },
+    {
+      question: "In distributed systems, what is the main goal of Paxos and Raft consensus algorithms?",
+      options: ["Improve network latency", "Ensure consistency across distributed nodes", "Optimize database indexing", "Enhance load balancing"],
+      correct: 2
+    },
+    {
+      question: "What is the primary weakness of static analysis in cybersecurity?",
+      options: ["High false positives", "Inability to detect zero-day vulnerabilities", "Slow performance", "Dependence on network traffic"],
+      correct: 1
+    },
+    {
+      question: "Which machine learning model is best suited for high-dimensional text classification?",
+      options: ["Random Forest", "Support Vector Machine (SVM)", "k-Nearest Neighbors (k-NN)", "Decision Trees"],
+      correct: 2
+    },
+    {
+      question: "In cybersecurity, what is the main purpose of a nonce?",
+      options: ["Prevent replay attacks", "Encrypt symmetric keys", "Generate cryptographic signatures", "Authenticate users"],
+      correct: 1
+    },
+    {
+      question: "What is the main disadvantage of deep Q-networks (DQN) in reinforcement learning?",
+      options: ["Require high computational power", "Only work with supervised learning", "Limited to linear problems", "Cannot handle reward-based systems"],
+      correct: 1
+    },
+    {
+      question: "Which technique is used to detect malware embedded in memory?",
+      options: ["Heuristic Analysis", "Sandboxing", "Volatile Memory Forensics", "Signature-Based Detection"],
+      correct: 3
+    },
+    {
+      question: "In cloud security, what is the biggest risk of container orchestration platforms like Kubernetes?",
+      options: ["Misconfigured role-based access control", "Inefficient CPU utilization", "Lack of virtual machine isolation", "Slow software deployment"],
+      correct: 1
+    },
+    {
+      question: "In artificial intelligence, what does catastrophic forgetting refer to?",
+      options: ["A model forgetting past knowledge when learning new tasks", "A neural network failing to converge", "Loss of training data during batch processing", "Unstable gradient descent updates"],
+      correct: 1
+    },
+    {
+      question: "What is the primary function of a TPM (Trusted Platform Module)?",
+      options: ["Secure key storage and hardware authentication", "Detect and remove malware", "Encrypt network traffic", "Optimize cloud workloads"],
+      correct: 1
+    },
+    {
+      question: "What is the key advantage of adversarial training in deep learning?",
+      options: ["Improves model robustness against adversarial attacks", "Reduces computational complexity", "Increases dataset size", "Ensures full model explainability"],
+      correct: 1
+    },
+    {
+      question: "In software development, what is the main drawback of monolithic architectures?",
+      options: ["Difficult to scale independently", "Requires a distributed database", "High network latency", "Poor security encryption"],
+      correct: 1
+    },
+    {
+      question: "Which cybersecurity threat involves embedding malicious payloads in image files?",
+      options: ["Steganography", "Keylogging", "Brute force attack", "Logic bomb"],
+      correct: 1
+    },
+    {
+      question: "What is the main purpose of a Generative Adversarial Network (GAN)?",
+      options: ["Generate synthetic data that mimics real data", "Reduce overfitting in deep learning models", "Improve clustering accuracy", "Extract features from time-series data"],
+      correct: 1
+    },
+    {
+      question: "In cybersecurity, which attack exploits hardware-level vulnerabilities?",
+      options: ["Spectre and Meltdown", "ARP Spoofing", "SQL Injection", "Ransomware"],
+      correct: 1
+    },
+    {
+      question: "Which AI approach is commonly used in autonomous robotics for environment exploration?",
+      options: ["Deep Q-learning", "Monte Carlo Tree Search", "A* Algorithm", "Swarm Intelligence"],
+      correct: 4
+    },
+    {
+      question: "In blockchain, what is the purpose of a smart contract?",
+      options: ["Automate transaction execution based on predefined conditions", "Increase the blockchain's mining speed", "Encrypt cryptocurrency transactions", "Improve transaction anonymity"],
+      correct: 1
+    },
+    {
+      question: "What is the primary weakness of symmetric encryption?",
+      options: ["Key exchange vulnerability", "High computational overhead", "Limited scalability", "Weak encryption strength"],
+      correct: 1
+    },
+    {
+      question: "What is the main purpose of reinforcement learning in AI?",
+      options: ["Learning through trial and error based on rewards", "Supervised training using labeled data", "Extracting patterns from unlabeled datasets", "Clustering similar data points"],
+      correct: 1
+    },
+    {
+      question: "In software security, what is the primary function of a sandbox?",
+      options: ["Isolate and analyze potentially malicious code", "Encrypt sensitive software data", "Optimize software performance", "Detect firewall misconfigurations"],
+      correct: 1
+    },
+    {
+      question: "What is the biggest challenge of Explainable AI (XAI)?",
+      options: ["Balancing model accuracy and interpretability", "Lack of computational resources", "Slow model inference speed", "Difficulty in training deep neural networks"],
+      correct: 1
+    },
+    {
+      question: "In network security, what is the purpose of a MAC flooding attack?",
+      options: ["Overloading a switch's MAC table to force traffic into a hub-like mode", "Bypassing network firewalls", "Exploiting buffer overflow vulnerabilities", "Injecting malicious DNS records"],
+      correct: 1
+    },
+    {
+      question: "In deep learning, what does batch normalization primarily help with?",
+      options: ["Reducing internal covariate shift", "Increasing dataset size", "Enhancing model interpretability", "Reducing memory consumption"],
+      correct: 1
+    },
+    {
+      question: "Which cybersecurity attack manipulates timestamps to avoid detection?",
+      options: ["Time-based SQL Injection", "Timestamp Spoofing", "Logic Bomb", "DNS Cache Poisoning"],
+      correct: 2
+    },
+    {
+      question: "What is the primary advantage of serverless computing?",
+      options: ["Eliminates the need for backend development", "Improves scalability without managing infrastructure", "Reduces memory leaks in software", "Enhances database query speed"],
+      correct: 2
+    },
+    {
+      question: "Which AI model is best for predicting time-series data?",
+      options: ["RNN (Recurrent Neural Network)", "CNN (Convolutional Neural Network)", "Random Forest", "k-Means Clustering"],
+      correct: 1
+    },
+    {
+      question: "Which malware modifies itself to avoid detection?",
+      options: ["Polymorphic Virus", "Worm", "Adware", "Ransomware"],
+      correct: 1
+    },
+    {
+      question: "In cybersecurity, what does threat modeling involve?",
+      options: ["Identifying and assessing security risks in a system", "Encrypting user data", "Analyzing system logs for anomalies", "Testing firewalls for vulnerabilities"],
+      correct: 1
+    },
+    {
+      question: "In cloud computing, what is the biggest risk of multi-tenancy?",
+      options: ["Data leakage between tenants", "Higher operational costs", "Slow data processing", "Limited network bandwidth"],
+      correct: 1
+    },
+    {
+      question: "What is the biggest challenge in adversarial machine learning?",
+      options: ["Making models resilient to adversarial inputs", "Lack of training data", "Overfitting", "Reducing training time"],
+      correct: 1
+    },
+    {
+      question: "What does a recurrent neural network (RNN) suffer from?",
+      options: ["Vanishing gradient problem", "High variance", "Slow training convergence", "Low activation threshold"],
+      correct: 1
+    },
+  {
+    "question": "In machine learning, which optimization algorithm is best for handling sparse and high-dimensional data?",
+    "options": ["Stochastic Gradient Descent (SGD)", "Adam", "RMSprop", "L-BFGS"],
+    "correct": 1
+  },
+  {
+    "question": "In cybersecurity, which attack exploits ICMP echo request packets to flood a network?",
+    "options": ["Smurf Attack", "SYN Flood", "DNS Amplification", "ARP Poisoning"],
+    "correct": 1
+  },
+  {
+    "question": "Which software engineering principle promotes loose coupling and high cohesion?",
+    "options": ["Single Responsibility Principle", "Open-Closed Principle", "Inversion of Control", "Dependency Injection"],
+    "correct": 4
+  },
+  {
+    "question": "In blockchain, what is the role of the nonce in proof-of-work?",
+    "options": ["Verify transaction authenticity", "Ensure immutability of blocks", "Adjust mining difficulty", "Generate a valid hash for a block"],
+    "correct": 4
+  },
+  {
+    "question": "What is the main purpose of LSTM (Long Short-Term Memory) networks?",
+    "options": ["Improve decision trees", "Handle long-range dependencies in sequences", "Reduce model overfitting", "Accelerate convolutional networks"],
+    "correct": 2
+  },
+  {
+    "question": "In cloud computing, what does a Cloud Access Security Broker (CASB) do?",
+    "options": ["Enforce security policies for cloud applications", "Optimize cloud data storage", "Manage cloud virtualization", "Improve cloud networking speeds"],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary weakness of RSA encryption?",
+    "options": ["Susceptible to man-in-the-middle attacks", "Computational inefficiency with large keys", "Inability to encrypt asymmetric keys", "High storage requirement for keys"],
+    "correct": 2
+  },
+  {
+    "question": "Which network attack involves intercepting and modifying communication between two parties?",
+    "options": ["Man-in-the-Middle (MITM)", "Session Hijacking", "DNS Spoofing", "Port Scanning"],
+    "correct": 1
+  },
+  {
+    "question": "What is a race condition in software development?",
+    "options": ["A situation where multiple threads access shared resources unpredictably", "A type of brute-force attack on databases", "A method for reducing execution time in loops", "A scheduling algorithm in real-time systems"],
+    "correct": 1
+  },
+  {
+    "question": "What is the main function of federated learning?",
+    "options": ["Train models on decentralized data without sharing raw data", "Reduce overfitting in deep learning models", "Optimize hyperparameter tuning", "Improve model explainability"],
+    "correct": 1
+  },
+  {
+    "question": "Which cybersecurity method is best for detecting insider threats?",
+    "options": ["User Behavior Analytics (UBA)", "Firewalls", "IDS/IPS", "Public Key Infrastructure (PKI)"],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary challenge of self-supervised learning in AI?",
+    "options": ["Lack of labeled data", "Computationally expensive training", "Limited model interpretability", "High variance in predictions"],
+    "correct": 2
+  },
+  {
+    "question": "In network security, what is the purpose of a reverse shell attack?",
+    "options": ["Gain control of a compromised system by initiating outbound connections", "Encrypt data on a system to demand ransom", "Intercept network traffic using packet sniffing", "Exploit vulnerabilities in a firewall"],
+    "correct": 1
+  },
+  {
+    "question": "Which machine learning technique is best for fraud detection?",
+    "options": ["Anomaly Detection", "K-Means Clustering", "Linear Regression", "Principal Component Analysis"],
+    "correct": 1
+  },
+  {
+    "question": "What is homomorphic encryption used for?",
+    "options": ["Performing computations on encrypted data without decryption", "Enhancing symmetric key exchange", "Increasing password complexity", "Encrypting blockchain transactions"],
+    "correct": 1
+  },
+  {
+    "question": "In cloud computing, which service model provides complete control over infrastructure?",
+    "options": ["IaaS (Infrastructure as a Service)", "PaaS (Platform as a Service)", "SaaS (Software as a Service)", "FaaS (Function as a Service)"],
+    "correct": 1
+  },
+  {
+    "question": "Which AI model is best suited for object detection in images?",
+    "options": ["CNN (Convolutional Neural Network)", "RNN (Recurrent Neural Network)", "Naïve Bayes", "k-Means"],
+    "correct": 1
+  },
+  {
+    "question": "What does the Zero Trust security model emphasize?",
+    "options": ["Never trust, always verify", "Encrypting all user data", "Relying on traditional perimeter security", "Granting full network access"],
+    "correct": 1
+  },
+  {
+    "question": "What is the main security risk of a buffer overflow attack?",
+    "options": ["Arbitrary code execution", "Slowing down system performance", "Exposing plaintext passwords", "Blocking legitimate network traffic"],
+    "correct": 1
+  },
+  {
+    "question": "In quantum computing, what is a qubit?",
+    "options": ["The fundamental unit of quantum information", "A type of encryption algorithm", "A quantum key used for decryption", "A logic gate used in classical computers"],
+    "correct": 1
+  },
+
+  {
+    "question": "What is the purpose of a honeynet in cybersecurity?",
+    "options": [
+      "A network of honeypots used to attract attackers",
+      "A decentralized blockchain security mechanism",
+      "A secure VPN tunneling technique",
+      "A type of deep learning model for malware detection"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is gradient explosion in deep learning?",
+    "options": [
+      "When gradients become too large, making training unstable",
+      "When model accuracy drops due to overfitting",
+      "A problem in reinforcement learning reward systems",
+      "The slow convergence of loss functions"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest risk of using biometric authentication?",
+    "options": [
+      "Irreversibility if compromised",
+      "High storage costs",
+      "Incompatibility with cloud services",
+      "Long authentication times"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In IoT security, what is the primary risk of default credentials?",
+    "options": [
+      "Devices become easy targets for botnets",
+      "Increased power consumption",
+      "Slower network speeds",
+      "Higher cost of maintenance"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which AI method is used for speech-to-text conversion?",
+    "options": [
+      "Recurrent Neural Networks (RNN)",
+      "Decision Trees",
+      "K-Means Clustering",
+      "Bayesian Networks"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What does tokenization do in cybersecurity?",
+    "options": [
+      "Replaces sensitive data with non-sensitive equivalents",
+      "Encrypts entire files",
+      "Compresses data for fast transmission",
+      "Creates a blockchain ledger entry"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is cross-site request forgery (CSRF)?",
+    "options": [
+      "A web attack that forces users to perform unwanted actions",
+      "A technique for encrypting web cookies",
+      "A method for detecting SQL injections",
+      "A way to analyze phishing attempts"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which cybersecurity method helps prevent brute-force attacks?",
+    "options": [
+      "Rate limiting",
+      "Network segmentation",
+      "Load balancing",
+      "Honeypot deployment"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary risk of deepfake technology?",
+    "options": [
+      "Misinformation and identity fraud",
+      "Reduced AI interpretability",
+      "High model training costs",
+      "Overfitting in deep learning"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In machine learning, which method is most effective for handling imbalanced datasets?",
+    "options": [
+      "L1 Regularization",
+      "Synthetic Minority Over-sampling (SMOTE)",
+      "Principal Component Analysis (PCA)",
+      "K-Means Clustering"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "In cybersecurity, what is the main purpose of an elliptic curve cryptography (ECC) algorithm?",
+    "options": [
+      "Faster encryption with shorter key sizes",
+      "Securely store passwords in databases",
+      "Improve network firewall rules",
+      "Prevent SQL injection attacks"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In software engineering, what is the primary drawback of microservices architecture?",
+    "options": [
+      "Higher complexity in communication and management",
+      "Increased memory usage",
+      "Lack of scalability",
+      "Poor fault tolerance"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which AI technique is best suited for sequence-to-sequence translation tasks?",
+    "options": [
+      "Transformer Networks",
+      "Decision Trees",
+      "K-Means Clustering",
+      "Support Vector Machines"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In cybersecurity, what is fileless malware?",
+    "options": [
+      "Malware that does not write itself to disk",
+      "A type of ransomware",
+      "A virus that corrupts boot sectors",
+      "Malware embedded in PDFs"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary advantage of quantum cryptography?",
+    "options": [
+      "Protection against brute-force attacks",
+      "Increased speed of encryption",
+      "Faster key distribution over public channels",
+      "Resistance to quantum computing attacks"
+    ],
+    "correct": 4
+  },
+  {
+    "question": "What is the primary drawback of genetic algorithms in AI?",
+    "options": [
+      "Slow convergence rate",
+      "Poor performance on linear problems",
+      "Requires supervised learning",
+      "Cannot handle missing data"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In cloud security, what is the greatest risk of multi-cloud environments?",
+    "options": [
+      "Complex security policy enforcement",
+      "Increased network latency",
+      "Higher energy consumption",
+      "Limited storage scalability"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which machine learning model is best for predicting stock market trends?",
+    "options": [
+      "Long Short-Term Memory (LSTM)",
+      "Decision Trees",
+      "K-Means Clustering",
+      "Naïve Bayes"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In software engineering, what does aspect-oriented programming (AOP) mainly address?",
+    "options": [
+      "Separation of concerns",
+      "Enhancing database performance",
+      "Improving multithreading efficiency",
+      "Increasing encryption strength"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary goal of a buffer overflow attack?",
+    "options": [
+      "Execute arbitrary code on a system",
+      "Overload network bandwidth",
+      "Modify firewall rules",
+      "Steal passwords via phishing"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In AI, what is a Siamese network mainly used for?",
+    "options": [
+      "Face verification and signature matching",
+      "Image classification",
+      "Clustering unlabeled data",
+      "Reinforcement learning"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the main security risk of shadow IT?",
+    "options": [
+      "Unauthorized software introduces vulnerabilities",
+      "Slower system performance",
+      "Increased cloud computing costs",
+      "Lack of compliance with software licenses"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In blockchain, what is the primary purpose of a Merkle tree?",
+    "options": [
+      "Efficiently verify data integrity in blocks",
+      "Encrypt transactions",
+      "Improve consensus mechanisms",
+      "Optimize mining algorithms"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary disadvantage of federated learning?",
+    "options": [
+      "High communication overhead",
+      "Limited scalability",
+      "Poor encryption techniques",
+      "Dependence on labeled data"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What does sharding do in databases?",
+    "options": [
+      "Splits large datasets across multiple servers for scalability",
+      "Encrypts database transactions",
+      "Optimizes SQL query execution",
+      "Prevents SQL injection attacks"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is SQL injection primarily used for?",
+    "options": [
+      "Gaining unauthorized database access",
+      "Cracking hashed passwords",
+      "Denying service to users",
+      "Bypassing firewalls"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary goal of an AI attention mechanism?",
+    "options": [
+      "Focus on important parts of input data for better predictions",
+      "Reduce the number of parameters in deep learning models",
+      "Prevent overfitting in convolutional networks",
+      "Increase computational speed in reinforcement learning"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which cybersecurity concept ensures that data cannot be modified by unauthorized users?",
+    "options": [
+      "Integrity",
+      "Confidentiality",
+      "Availability",
+      "Non-repudiation"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest challenge of adversarial machine learning?",
+    "options": [
+      "Making models robust against adversarial attacks",
+      "Training models with small datasets",
+      "Optimizing hyperparameters",
+      "Reducing training time"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the main advantage of homomorphic encryption?",
+    "options": [
+      "Enables computation on encrypted data without decryption",
+      "Reduces encryption overhead",
+      "Improves key exchange security",
+      "Provides higher compression for encrypted files"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "In AI, what is transfer learning?",
+    "options": [
+      "Using a pre-trained model to improve learning on a new task",
+      "Copying neural network weights to another model",
+      "Training a model without labeled data",
+      "Applying reinforcement learning to supervised learning tasks"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary purpose of an intrusion prevention system (IPS)?",
+    "options": [
+      "Actively block threats before they reach a system",
+      "Monitor network traffic without blocking it",
+      "Encrypt network traffic for confidentiality",
+      "Identify phishing attempts in emails"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest security concern with biometric authentication?",
+    "options": [
+      "Biometric data is irreversible if compromised",
+      "High computational cost",
+      "Limited scalability in cloud environments",
+      "Difficult integration with traditional firewalls"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which attack involves tricking a system into treating a normal user as an admin?",
+    "options": [
+      "Privilege Escalation",
+      "Session Hijacking",
+      "Man-in-the-Middle",
+      "ARP Spoofing"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "What is the purpose of an LSTM forget gate?",
+    "options": [
+      "Controls what information is discarded from memory",
+      "Prevents overfitting in deep neural networks",
+      "Reduces computation in convolutional layers",
+      "Enhances training speed in reinforcement learning"
+    ],
+    "correct": 1
+  },
+  
+  {
+    "question": "In deep learning, which optimization algorithm is best for handling sparse features in high-dimensional data?",
+    "options": ["Adam", "AdaGrad", "L-BFGS", "RMSprop"],
+    "correct": 2
+  },
+  {
+    "question": "In zero-trust security architecture, what is the key principle?",
+    "options": ["Trust everything inside the corporate network", "Block all traffic by default", "Enforce least privilege access and continuous verification", "Rely only on antivirus and firewalls"],
+    "correct": 3
+  },
+  {
+    "question": "What is the most critical risk of GPT-based AI models in cybersecurity?",
+    "options": ["Adversarial attacks manipulating model outputs", "Slow inference speed", "High energy consumption", "Lack of scalability"],
+    "correct": 1
+  },
+  {
+    "question": "Which cryptographic technique ensures that data remains secure even if an encryption key is leaked?",
+    "options": ["Quantum Key Distribution (QKD)", "Homomorphic Encryption", "Zero-Knowledge Proofs", "Differential Privacy"],
+    "correct": 3
+  },
+  {
+    "question": "In AI ethics, what is the biggest challenge of explainable AI (XAI)?",
+    "options": ["Trade-off between accuracy and interpretability", "High computational cost", "Requires large labeled datasets", "Limited application in supervised learning"],
+    "correct": 1
+  },
+  {
+    "question": "Which attack exploits a vulnerability in speculative execution of processors?",
+    "options": ["Spectre", "BlueKeep", "Rowhammer", "EternalBlue"],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest threat posed by quantum computing to cybersecurity?",
+    "options": ["Ability to break RSA and ECC encryption", "Increased computational cost of encryption", "Reduced speed of blockchain transactions", "Limited storage of quantum registers"],
+    "correct": 1
+  },
+  {
+    "question": "In cyber threat intelligence (CTI), what is the MITRE ATT&CK framework used for?",
+    "options": ["Identifying and classifying adversarial tactics and techniques", "Encrypting endpoint data", "Strengthening multi-factor authentication", "Automating malware detection"],
+    "correct": 1
+  },
+  {
+    "question": "In machine learning, which approach prevents catastrophic forgetting in neural networks?",
+    "options": ["Elastic Weight Consolidation (EWC)", "Dropout Regularization", "L1 and L2 Norms", "Data Augmentation"],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest risk of deepfake technology in cybersecurity?",
+    "options": ["Misinformation and identity fraud", "Slow AI inference time", "High GPU cost for training", "Limited dataset availability"],
+    "correct": 1
+  },
+  {
+    "question": "In cloud security, what is the greatest weakness of serverless computing?",
+    "options": ["Cold start delays", "Increased attack surface due to function sprawl", "Limited support for AI workloads", "High energy consumption"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary limitation of Federated Learning in AI security?",
+    "options": ["High communication overhead", "Requires labeled datasets", "Only works with CNNs", "Vulnerable to overfitting"],
+    "correct": 1
+  },
+  {
+    "question": "Which security mechanism is best suited for preventing unauthorized code execution in memory?",
+    "options": ["Data Execution Prevention (DEP)", "Intrusion Detection System (IDS)", "Role-Based Access Control (RBAC)", "Secure Boot"],
+    "correct": 1
+  },
+  {
+    "question": "In blockchain, what is the primary risk of 51% attacks?",
+    "options": ["Double-spending", "Increased block size", "Slower transaction speeds", "Poor consensus mechanisms"],
+    "correct": 1
+  },
+  {
+    "question": "Which AI method is best suited for detecting adversarial attacks on neural networks?",
+    "options": ["Adversarial Training", "k-Means Clustering", "Dimensionality Reduction", "Reinforcement Learning"],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary security risk of API-based microservices architecture?",
+    "options": ["Increased attack surface for API exploitation", "Poor network performance", "Higher data redundancy", "Lower response time"],
+    "correct": 1
+  },
+  {
+    "question": "What is the main limitation of homomorphic encryption?",
+    "options": ["High computational overhead", "Key exchange vulnerability", "Weak encryption strength", "Only works for blockchain"],
+    "correct": 1
+  },
+  {
+    "question": "Which type of malware modifies the boot process to persist on a system?",
+    "options": ["Bootkit", "Rootkit", "Keylogger", "Ransomware"],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest advantage of BERT over traditional NLP models?",
+    "options": ["Bi-directional contextual understanding", "Faster training speed", "Requires no labeled data", "Can be used for reinforcement learning"],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest concern with passwordless authentication?",
+    "options": ["Identity theft via biometric spoofing", "Increased storage costs", "Slower authentication process", "Limited compatibility with legacy systems"],
+    "correct": 1
+  },
+  {
+    "question": "What is the main advantage of zero-trust network access (ZTNA) over VPNs?",
+    "options": ["Granular access control based on user identity and device posture", "Higher bandwidth efficiency", "More reliable than VPN tunnels", "Faster encryption speed"],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary security risk of edge computing?",
+    "options": ["Increased attack surface due to decentralized nodes", "Slow response time in real-time applications", "Higher power consumption", "Limited use for IoT applications"],
+    "correct": 1
+  },
+  {
+    "question": "Which AI technique is best suited for detecting rare cyber threats in large datasets?",
+    "options": ["Anomaly Detection using Autoencoders", "Decision Trees", "Linear Regression", "Naïve Bayes"],
+    "correct": 1
+  },
+  {
+    "question": "In AI security, what is the main purpose of differential privacy?",
+    "options": ["Protecting sensitive data in machine learning models", "Reducing model training time", "Increasing interpretability of AI models", "Enhancing adversarial robustness"],
+    "correct": 1
+  },
+  {
+    "question": "What is the primary reason why adversarial machine learning is a critical cybersecurity threat?",
+    "options": ["AI models can be manipulated by slight input changes", "AI models require large datasets", "Neural networks are inherently slow", "It prevents supervised learning from working"],
+    "correct": 1
+  },
+  {
+    "question": "What is the main purpose of side-channel attacks?",
+    "options": ["Extracting sensitive information from hardware behavior", "Corrupting network traffic", "Crashing web servers", "Injecting malicious SQL queries"],
+    "correct": 1
+  },
+  {
+    "question": "In cloud security, what is the risk of container escape attacks?",
+    "options": ["Attackers gain unauthorized access to the host system", "Containers become unresponsive", "Poor encryption of data-at-rest", "Limited compatibility with serverless environments"],
+    "correct": 1
+  },
+  {
+    "question": "What is the most effective defense against adversarial AI attacks?",
+    "options": ["Defensive Distillation", "Batch Normalization", "Feature Selection", "Regularization"],
+    "correct": 1
+  },
+  {
+    "question": "Which cybersecurity principle is most important in preventing insider threats?",
+    "options": ["Least Privilege", "Honeypot Deployment", "VLAN Segmentation", "VPN Encryption"],
+    "correct": 1
+  },
+  {
+    "question": "What is the biggest risk of AI-powered cybersecurity?",
+    "options": ["False positives in threat detection", "High training costs", "Incompatibility with cloud environments", "Lack of labeled training data"],
+    "correct": 1
+  },
+  {
+    "question": "Which AI technique is best for generating realistic human-like text?",
+    "options": ["Transformer-based models (e.g., GPT)", "CNN", "Decision Tree", "K-Means Clustering"],
+    "correct": 1
+  },
+
+  {
+    "question": "What is the biggest risk of using AI in cybersecurity threat detection?",
+    "options": [
+      "High computational cost",
+      "Data privacy violations",
+      "High false positive rate",
+      "Lack of training data"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which programming paradigm is most commonly used in functional programming?",
+    "options": [
+      "Procedural programming",
+      "Object-oriented programming",
+      "Declarative programming",
+      "Event-driven programming"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the main security vulnerability of RESTful APIs?",
+    "options": [
+      "Poor performance",
+      "Lack of proper authentication and authorization",
+      "Limited scalability",
+      "No versioning support"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which deep learning model architecture is best for time-series forecasting?",
+    "options": [
+      "Convolutional Neural Network (CNN)",
+      "Support Vector Machine",
+      "Long Short-Term Memory (LSTM)",
+      "Decision Tree"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the main advantage of using homomorphic encryption?",
+    "options": [
+      "Faster key exchange",
+      "Reduces storage requirements",
+      "Enables computation on encrypted data without decryption",
+      "Simplifies access control"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which cybersecurity principle is used to ensure that a system continues to operate under attack?",
+    "options": [
+      "Confidentiality",
+      "Integrity",
+      "Resilience",
+      "Non-repudiation"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which algorithm is most effective for detecting anomalies in cybersecurity logs?",
+    "options": [
+      "Logistic Regression",
+      "Isolation Forest",
+      "K-Means Clustering",
+      "Naïve Bayes"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the biggest disadvantage of quantum cryptography?",
+    "options": [
+      "Weak encryption strength",
+      "Requires specialized hardware infrastructure",
+      "Vulnerable to replay attacks",
+      "Difficult to implement in software"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What type of machine learning attack involves slightly modifying input data to deceive a model?",
+    "options": [
+      "Poisoning attack",
+      "Model inversion attack",
+      "Adversarial attack",
+      "Replay attack"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which key property makes blockchain resistant to tampering?",
+    "options": [
+      "Centralized architecture",
+      "Cryptographic hashing and decentralization",
+      "Public accessibility",
+      "Smart contract automation"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary risk of using AI-generated deepfake videos?",
+    "options": [
+      "Increased bandwidth usage",
+      "Identity fraud and misinformation",
+      "Model overfitting",
+      "Slow inference speed"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which AI technique is commonly used in reinforcement learning for decision-making?",
+    "options": [
+      "Support Vector Machine",
+      "Q-Learning",
+      "Principal Component Analysis",
+      "Bayesian Inference"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the biggest risk of using biometric authentication?",
+    "options": [
+      "High cost",
+      "Irreversible data exposure if compromised",
+      "Low accuracy",
+      "Incompatibility with mobile devices"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which cybersecurity concept ensures that data remains unaltered during transmission?",
+    "options": [
+      "Confidentiality",
+      "Availability",
+      "Data integrity",
+      "Access control"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which component of a neural network prevents vanishing gradients in deep models?",
+    "options": [
+      "Sigmoid function",
+      "Softmax activation",
+      "ReLU (Rectified Linear Unit) activation function",
+      "Batch normalization"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the main reason for using a Content Delivery Network (CDN) in cybersecurity?",
+    "options": [
+      "To store encrypted data",
+      "To reduce server load",
+      "Mitigating Distributed Denial of Service (DDoS) attacks",
+      "Improving database query speed"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the primary function of a honeypot in cybersecurity?",
+    "options": [
+      "Encrypt sensitive data",
+      "Authenticate users",
+      "Lure and analyze attackers",
+      "Monitor network performance"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which AI approach is used to train chatbots for natural conversation?",
+    "options": [
+      "Clustering algorithms",
+      "Sequence-to-sequence learning with attention",
+      "Linear regression",
+      "Rule-based systems"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which machine learning algorithm is best suited for detecting insider threats?",
+    "options": [
+      "Linear Regression",
+      "Anomaly detection using Autoencoders",
+      "Decision Trees",
+      "K-Means Clustering"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the biggest security concern with cloud-based AI models?",
+    "options": [
+      "High energy consumption",
+      "Data leakage and model inversion attacks",
+      "Limited dataset availability",
+      "Slow response time"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which cybersecurity mechanism is used to protect against ransomware attacks?",
+    "options": [
+      "Firewalls",
+      "Regular data backups and endpoint protection",
+      "Multi-factor authentication",
+      "Load balancing"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary weakness of multi-factor authentication (MFA)?",
+    "options": [
+      "High cost",
+      "Complex implementation",
+      "Vulnerable to phishing and SIM swapping attacks",
+      "Only works offline"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which AI model architecture is best for processing image data?",
+    "options": [
+      "Recurrent Neural Networks (RNN)",
+      "Transformers",
+      "Convolutional Neural Networks (CNN)",
+      "Autoencoders"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the main limitation of federated learning in AI?",
+    "options": [
+      "Requires labeled datasets",
+      "High communication overhead",
+      "Only works with CNNs",
+      "Poor accuracy"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which cyberattack exploits flaws in CPU speculative execution?",
+    "options": [
+      "BlueKeep",
+      "Rowhammer",
+      "Spectre attack",
+      "EternalBlue"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the primary reason for implementing zero-trust security architecture?",
+    "options": [
+      "Reduce network latency",
+      "Eliminates implicit trust and enforces continuous verification",
+      "Improve cloud computing performance",
+      "Increase data compression efficiency"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which cybersecurity concept ensures that users can access services when needed?",
+    "options": [
+      "Confidentiality",
+      "Integrity",
+      "Availability",
+      "Non-repudiation"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the primary purpose of an intrusion prevention system (IPS)?",
+    "options": [
+      "Monitor traffic passively",
+      "Actively blocks malicious traffic before it reaches the system",
+      "Store log files securely",
+      "Encrypt data at rest"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which attack technique involves manipulating AI models by poisoning training data?",
+    "options": [
+      "Adversarial attack",
+      "Model inversion attack",
+      "Data poisoning attack",
+      "Side-channel attack"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What is the biggest challenge of securing IoT devices?",
+    "options": [
+      "Lack of user interest",
+      "High development cost",
+      "Limited computational resources for security features",
+      "Incompatibility with cloud platforms"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which machine learning model is best for predicting fraudulent transactions?",
+    "options": [
+      "K-Means Clustering",
+      "Random Forest or Gradient Boosting",
+      "Linear Regression",
+      "Naïve Bayes"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary function of Secure Boot in cybersecurity?",
+    "options": [
+      "Speed up system startup",
+      "Ensure only trusted software loads during system startup",
+      "Secure web traffic",
+      "Prevent phishing attacks"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which AI algorithm is best suited for dynamic pricing models?",
+    "options": [
+      "Supervised learning",
+      "Reinforcement Learning",
+      "Unsupervised learning",
+      "Dimensionality reduction"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the key security risk of supply chain attacks?",
+    "options": [
+      "Slow deployment",
+      "Compromised third-party software or hardware components",
+      "Limited scalability",
+      "High memory usage"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which attack involves redirecting users from legitimate sites to malicious ones?",
+    "options": [
+      "Man-in-the-Middle Attack",
+      "DNS spoofing",
+      "Brute-force attack",
+      "Cross-site scripting"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the main disadvantage of elliptic curve cryptography (ECC)?",
+    "options": [
+      "Low security level",
+      "High computational cost",
+      "Complex key management",
+      "Only works with symmetric encryption"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which security measure is used to detect unauthorized changes in firmware?",
+    "options": [
+      "Encryption",
+      "Integrity monitoring",
+      "Rate limiting",
+      "Tokenization"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary risk of smart contracts in blockchain?",
+    "options": [
+      "High transaction fees",
+      "Vulnerabilities in contract code execution",
+      "Slow mining speed",
+      "Limited use cases"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which attack involves exploiting vulnerabilities in AI models to infer sensitive training data?",
+    "options": [
+      "Adversarial attack",
+      "Data poisoning attack",
+      "Model inversion attack",
+      "SQL injection"
+    ],
+    "correct": 3
+  },
+  
+  {
+    "question": "Which of the following is NOT a principle of Agile methodology?",
+    "options": [
+      "Customer collaboration over contract negotiation",
+      "Comprehensive documentation over working software",
+      "Responding to change over following a plan",
+      "Individuals and interactions over processes and tools"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following data structures is used in recursion?",
+    "options": ["Queue", "Stack", "Linked List", "Heap"],
+    "correct": 2
+  },
+  {
+    "question": "Which network layer protocol provides connectionless communication and is widely used for real-time applications?",
+    "options": ["TCP", "UDP", "ICMP", "ARP"],
+    "correct": 2
+  },
+  {
+    "question": "In software testing, what is the purpose of boundary value analysis?",
+    "options": [
+      "To check system performance under load",
+      "To test values at the edges of input ranges",
+      "To ensure security vulnerabilities are detected",
+      "To verify data integrity in databases"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which type of malware is designed to execute only when specific conditions are met, such as a certain date or event?",
+    "options": ["Worm", "Trojan", "Logic Bomb", "Spyware"],
+    "correct": 3
+  },
+  {
+    "question": "What is the primary advantage of using a hash table over a binary search tree for searching?",
+    "options": [
+      "Faster search time on average",
+      "Less memory usage",
+      "Always maintains sorted order",
+      "More efficient for large datasets"
+    ],
+    "correct": 1
+  },
+  {
+    "question": "Which of the following is a property of a secure cryptographic hash function?",
+    "options": [
+      "It must be reversible",
+      "It should produce a fixed-length output",
+      "It should allow easy collision generation",
+      "It must be dependent on input length"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "In object-oriented programming, which feature allows an object to take multiple forms based on its context?",
+    "options": ["Encapsulation", "Inheritance", "Polymorphism", "Abstraction"],
+    "correct": 3
+  },
+  {
+    "question": "A firewall that inspects packets at the application layer is known as a:",
+    "options": [
+      "Packet-filtering firewall",
+      "Stateful inspection firewall",
+      "Proxy firewall",
+      "Network-layer firewall"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "Which scheduling algorithm may cause starvation for some processes?",
+    "options": [
+      "First-Come, First-Served (FCFS)",
+      "Shortest Job Next (SJN)",
+      "Round Robin (RR)",
+      "Multilevel Queue"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the main purpose of a software design pattern?",
+    "options": [
+      "To increase execution speed",
+      "To provide reusable solutions to common problems",
+      "To replace software testing",
+      "To eliminate programming errors"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which sorting algorithm has the worst-case time complexity of O(n²) but performs well for small datasets?",
+    "options": ["Merge Sort", "Quick Sort", "Bubble Sort", "Heap Sort"],
+    "correct": 3
+  },
+  {
+    "question": "Which layer of the OSI model is responsible for encryption and decryption?",
+    "options": ["Transport Layer", "Network Layer", "Presentation Layer", "Application Layer"],
+    "correct": 3
+  },
+  {
+    "question": "What is the key characteristic of DevOps in software development?",
+    "options": [
+      "Separation of development and operations",
+      "Emphasis on manual testing",
+      "Continuous integration and deployment",
+      "Focus on lengthy documentation"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "In a database, which type of key is used to uniquely identify each row?",
+    "options": ["Foreign Key", "Primary Key", "Composite Key", "Candidate Key"],
+    "correct": 2
+  },
+  {
+    "question": "Which type of cyberattack floods a system with excessive traffic to make it unavailable?",
+    "options": ["Phishing", "Man-in-the-middle attack", "Denial-of-Service (DoS)", "SQL Injection"],
+    "correct": 3
+  },
+  {
+    "question": "Which scheduling algorithm allows a process to run for a fixed time before switching to another process?",
+    "options": [
+      "First-Come, First-Served (FCFS)",
+      "Shortest Job Next (SJN)",
+      "Round Robin (RR)",
+      "Priority Scheduling"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "What does RAID stand for in data storage?",
+    "options": [
+      "Random Access Integrated Device",
+      "Redundant Array of Independent Disks",
+      "Real-time Automated Information Database",
+      "Remote Access Internet Disk"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which technique is used to prevent SQL injection attacks?",
+    "options": [
+      "Using strong passwords",
+      "Input validation and parameterized queries",
+      "Enabling JavaScript on client-side",
+      "Disabling firewalls"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "In object-oriented programming, which principle suggests that details of a class should not be visible to the outside world?",
+    "options": ["Inheritance", "Encapsulation", "Polymorphism", "Abstraction"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is an example of asymmetric encryption?",
+    "options": ["AES", "DES", "RSA", "SHA-256"],
+    "correct": 3
+  },
+  {
+    "question": "What is the main purpose of a Load Balancer in a distributed system?",
+    "options": [
+      "To increase network speed",
+      "To distribute traffic across multiple servers",
+      "To replace firewalls",
+      "To store backups"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "Which programming paradigm focuses on 'what' to solve rather than 'how' to solve it?",
+    "options": ["Procedural", "Object-Oriented", "Functional", "Logic"],
+    "correct": 4
+  },
+  {
+    "question": "Which component of a computer system directly interacts with the CPU to transfer data?",
+    "options": ["Hard Disk", "RAM", "Power Supply", "Monitor"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is a fundamental security principle in system design?",
+    "options": [
+      "Security through obscurity",
+      "Least privilege",
+      "Open access for all",
+      "Unlimited administrative rights"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the purpose of a honeypot in cybersecurity?",
+    "options": [
+      "To prevent network traffic",
+      "To attract and analyze potential attackers",
+      "To improve system performance",
+      "To encrypt all communications"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the main advantage of NoSQL databases over relational databases?",
+    "options": [
+      "Higher security",
+      "Better for structured data only",
+      "High scalability and flexibility",
+      "Enforces strict ACID compliance"
+    ],
+    "correct": 3
+  },
+  {
+    "question": "In software development, what is the purpose of unit testing?",
+    "options": [
+      "To test an entire system",
+      "To test individual components in isolation",
+      "To test performance under high load",
+      "To verify security vulnerabilities"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What does an Intrusion Detection System (IDS) do?",
+    "options": [
+      "Blocks malicious attacks in real-time",
+      "Detects and alerts on suspicious activities",
+      "Encrypts all network traffic",
+      "Manages user authentication"
+    ],
+    "correct": 2
+  },
+  {
+    "question": "What is the major drawback of IPv4 that IPv6 solves?",
+    "options": [
+      "Lack of support for multimedia",
+      "Limited address space",
+      "High latency in communication",
+      "Incompatibility with wireless networks"
+    ],
+    "correct": 2
+  },
+  
+
+
+  {
+    "question": "Which software development methodology focuses on delivering small, functional increments frequently?",
+    "options": ["Waterfall", "Agile", "Spiral", "V-Model"],
+    "correct": 2
+  },
+  {
+    "question": "Which machine learning algorithm is best for classification problems?",
+    "options": ["K-Means Clustering", "Decision Tree", "Linear Regression", "Principal Component Analysis"],
+    "correct": 2
+  },
+  {
+    "question": "In which memory allocation strategy are memory blocks assigned as they become available?",
+    "options": ["Fixed Partitioning", "Best Fit", "Paging", "FIFO"],
+    "correct": 2
+  },
+  {
+    "question": "What is the purpose of a checksum in data transmission?",
+    "options": ["To compress data", "To detect errors", "To encrypt data", "To enhance bandwidth"],
+    "correct": 2
+  },
+  {
+    "question": "What does a buffer overflow exploit target in a program?",
+    "options": ["Unused variables", "Insufficient memory allocation", "Infinite loops", "Improper network configuration"],
+    "correct": 2
+  },
+  {
+    "question": "Which network topology is most fault-tolerant?",
+    "options": ["Bus", "Star", "Ring", "Mesh"],
+    "correct": 4
+  },
+  {
+    "question": "What is the role of an API Gateway in microservices architecture?",
+    "options": ["To store large datasets", "To manage service communication", "To increase RAM speed", "To replace all backend services"],
+    "correct": 2
+  },
+  {
+    "question": "What does SSL/TLS provide in network communication?",
+    "options": ["Data encryption and authentication", "Faster network speed", "Hardware-level optimization", "Automatic software updates"],
+    "correct": 1
+  },
+  {
+    "question": "Which data structure is used in Breadth-First Search (BFS)?",
+    "options": ["Stack", "Queue", "Linked List", "Heap"],
+    "correct": 2
+  },
+  {
+    "question": "In cloud computing, what is the primary purpose of elasticity?",
+    "options": ["To reduce storage", "To dynamically allocate resources as needed", "To improve power efficiency", "To enhance database indexing"],
+    "correct": 2
+  },
+  {
+    "question": "Which software development life cycle (SDLC) phase involves feasibility studies and requirement gathering?",
+    "options": ["Design", "Implementation", "Planning", "Testing"],
+    "correct": 3
+  },
+  {
+    "question": "What is the main purpose of a mutex in multithreading?",
+    "options": ["To execute multiple threads simultaneously", "To ensure only one thread accesses a resource at a time", "To increase CPU performance", "To improve network communication"],
+    "correct": 2
+  },
+  {
+    "question": "Which protocol is primarily used for secure web communication?",
+    "options": ["HTTP", "FTP", "SMTP", "HTTPS"],
+    "correct": 4
+  },
+  {
+    "question": "In software engineering, which model is best suited for projects with rapidly changing requirements?",
+    "options": ["Waterfall", "V-Model", "Spiral", "Agile"],
+    "correct": 4
+  },
+  {
+    "question": "What is the purpose of normalization in databases?",
+    "options": ["To store large datasets", "To reduce data redundancy and improve consistency", "To increase query speed", "To create duplicate records"],
+    "correct": 2
+  },
+  {
+    "question": "Which attack involves intercepting and altering communications between two parties?",
+    "options": ["Phishing", "Man-in-the-Middle (MITM)", "Ransomware", "DDoS"],
+    "correct": 2
+  },
+  {
+    "question": "In operating systems, what is thrashing?",
+    "options": ["Excessive CPU usage", "Frequent swapping of pages between memory and disk", "Process starvation", "Disk fragmentation"],
+    "correct": 2
+  },
+  {
+    "question": "Which data structure is best for implementing a LIFO (Last-In, First-Out) system?",
+    "options": ["Queue", "Stack", "Linked List", "Graph"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary goal of an ethical hacker?",
+    "options": ["To steal sensitive information", "To find and fix security vulnerabilities", "To launch cyberattacks", "To spread malware"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following is a key feature of object-oriented programming?",
+    "options": ["Procedural abstraction", "Function overloading", "Encapsulation", "Inline assembly"],
+    "correct": 3
+  },
+  {
+    "question": "What is the purpose of a digital signature?",
+    "options": ["To encrypt data", "To verify the authenticity and integrity of a message", "To increase network speed", "To compress files"],
+    "correct": 2
+  },
+  {
+    "question": "Which algorithm is commonly used for shortest path problems in graphs?",
+    "options": ["QuickSort", "Dijkstra’s Algorithm", "Depth-First Search", "Bubble Sort"],
+    "correct": 2
+  },
+  {
+    "question": "What is the function of a hypervisor in virtualization?",
+    "options": ["To manage virtual machines", "To optimize CPU performance", "To provide encryption", "To enhance graphical processing"],
+    "correct": 1
+  },
+  {
+    "question": "What does IPv6 use instead of broadcast addressing?",
+    "options": ["Unicast", "Anycast", "Multicast", "Dualcast"],
+    "correct": 3
+  },
+  {
+    "question": "Which hashing algorithm is considered weak due to collision vulnerabilities?",
+    "options": ["SHA-256", "SHA-512", "MD5", "AES"],
+    "correct": 3
+  },
+  {
+    "question": "In relational databases, what does ACID stand for?",
+    "options": ["Analysis, Computation, Integrity, Data", "Atomicity, Consistency, Isolation, Durability", "Access, Control, Identification, Deletion", "Authentication, Cryptography, Integrity, Decoding"],
+    "correct": 2
+  },
+  {
+    "question": "Which principle is essential for writing maintainable software?",
+    "options": ["KISS (Keep It Simple, Stupid)", "Over-engineering", "Hardcoding values", "Ignoring documentation"],
+    "correct": 1
+  },
+  {
+    "question": "Which network topology requires the most cabling?",
+    "options": ["Star", "Ring", "Bus", "Mesh"],
+    "correct": 4
+  },
+  {
+    "question": "What does a zero-day vulnerability refer to?",
+    "options": ["A security flaw known to attackers but not yet patched", "A virus that activates on the first day of infection", "A malware that replicates automatically", "A type of DoS attack"],
+    "correct": 1
+  },
+  {
+    "question": "Which layer of the OSI model deals with routing packets?",
+    "options": ["Data Link Layer", "Transport Layer", "Network Layer", "Session Layer"],
+    "correct": 3
+  },
+  {
+    "question": "What is the main characteristic of a polymorphic virus?",
+    "options": ["It hides in the operating system", "It changes its code to evade detection", "It spreads only through email attachments", "It requires administrator privileges to execute"],
+    "correct": 2
+  },
+  {
+    "question": "Which of the following sorting algorithms is NOT based on the divide-and-conquer approach?",
+    "options": ["Merge Sort", "Quick Sort", "Heap Sort", "Bubble Sort"],
+    "correct": 4
+  },
+  {
+    "question": "What does the 'principle of least privilege' recommend?",
+    "options": ["Granting users only the minimum access necessary", "Giving every user administrative access", "Allowing all users full control over the system", "Disabling authentication for efficiency"],
+    "correct": 1
+  },
+  {
+    "question": "Which technique is used in artificial intelligence to enable machines to learn from past experiences?",
+    "options": ["Expert Systems", "Reinforcement Learning", "Flowcharts", "Static Analysis"],
+    "correct": 2
+  },
+  {
+    "question": "What is the primary function of a Content Delivery Network (CDN)?",
+    "options": ["To provide faster access to web content by caching data", "To encrypt internet traffic", "To manage database transactions", "To filter email spam"],
+    "correct": 1
+  },
+  {
+    "question": "Which of the following is NOT a component of the CIA triad in cybersecurity?",
+    "options": ["Confidentiality", "Integrity", "Availability", "Authorization"],
+    "correct": 4
+  },
+  {
+    "question": "What is a key advantage of cloud computing?",
+    "options": ["Unlimited free storage", "High scalability and cost efficiency", "Works without internet", "Eliminates all security risks"],
+    "correct": 2
+  },
+  {
+    "question": "In a computer network, what is an 'evil twin' attack?",
+    "options": ["A phishing attack", "A fake Wi-Fi network that mimics a legitimate one", "A denial-of-service attack", "A ransomware attack"],
+    "correct": 2
+  },
+  {
+    "question": "What is a hash function primarily used for in cryptography?",
+    "options": ["Encrypting messages", "Storing passwords securely", "Creating random numbers", "Establishing VPN connections"],
+    "correct": 2
+  },
+  {
+    "question": "What is the key purpose of penetration testing?",
+    "options": ["To ensure network speed", "To find and fix security vulnerabilities before attackers exploit them", "To create network firewalls", "To replace antivirus software"],
+    "correct": 2
+  }
+
+ 
+        ];
+
+        // Quiz state
+         let currentQuestion = 0;
+let userAnswers = [];
+let timeRemaining = 0;
+let timerInterval;
+let totalQuestions = 10;
+let selectedQuestions = [];
+let startTime;
+
+function startQuiz() {
+    const timeInput = document.getElementById('timeInput').value;
+    const questionCountSelect = document.getElementById('questionCount').value;
+
+    totalQuestions = parseInt(questionCountSelect);
+    timeRemaining = parseInt(timeInput) * 60; // Convert to seconds
+
+    // Randomly select questions
+    selectedQuestions = getRandomQuestions(totalQuestions);
+    userAnswers = new Array(totalQuestions).fill(-1);
+
+    // Hide setup screen and show quiz screen
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+
+    startTime = Date.now();
+    startTimer();
+    loadQuestion();
+}
+
+function getRandomQuestions(count) {
+    const shuffled = [...quizData].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+            endQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    document.getElementById('timer').textContent =
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function loadQuestion() {
+    const question = selectedQuestions[currentQuestion];
+
+    // Update question number and progress
+    document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}`;
+    document.getElementById('questionText').textContent = question.question;
+
+    // Update progress bar
+    const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+
+    // Load options
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+
+    question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'col-12 mb-2';
+
+        const isSelected = userAnswers[currentQuestion] === index;
+        const isCorrect = index === question.correct;
+        
+        // Determine button class based on selection and correctness
+        let buttonClass = 'btn btn-outline-primary';
+        if (isSelected) {
+            if (isCorrect) {
+                buttonClass = 'btn btn-success selected'; // Green for correct selection
+            } else {
+                buttonClass = 'btn btn-danger selected'; // Red for wrong selection
+            }
+        } else if (userAnswers[currentQuestion] !== -1 && isCorrect) {
+            // Show correct answer in green when user selected wrong answer
+            buttonClass = 'btn btn-success';
+        }
+
+        optionDiv.innerHTML = `
+            <button class="option-btn ${buttonClass} w-100 p-3" onclick="selectOption(${index})">
+                <strong>${String.fromCharCode(65 + index)}.</strong> ${option}
+            </button>
+        `;
+
+        optionsContainer.appendChild(optionDiv);
+    });
+
+    // Update navigation buttons
+    document.getElementById('prevBtn').disabled = currentQuestion === 0;
+    document.getElementById('nextBtn').textContent =
+        currentQuestion === totalQuestions - 1 ? 'Finish Quiz' : 'Next →';
+}
+
+function selectOption(optionIndex) {
+    const question = selectedQuestions[currentQuestion];
+    const correctAnswer = question.correct;
+    
+    userAnswers[currentQuestion] = optionIndex;
+
+    // Update button styles
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((btn, index) => {
+        if (index === optionIndex) {
+            // User's selected answer
+            if (index === correctAnswer) {
+                btn.className = 'option-btn btn btn-success selected w-100 p-3'; // Green for correct
+            } else {
+                btn.className = 'option-btn btn btn-danger selected w-100 p-3'; // Red for wrong
+            }
+        } else if (index === correctAnswer && optionIndex !== correctAnswer) {
+            // Highlight correct answer when user selects wrong answer
+            btn.className = 'option-btn btn btn-success w-100 p-3'; // Green for correct answer
+        } else {
+            btn.className = 'option-btn btn btn-outline-primary w-100 p-3'; // Default style
+        }
+    });
+}
+
+function previousQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+    }
+}
+
+function nextQuestion() {
+    if (currentQuestion < totalQuestions - 1) {
+        currentQuestion++;
+        loadQuestion();
+    } else {
+        endQuiz();
+    }
+}
+
+function endQuiz() {
+    clearInterval(timerInterval);
+
+    // Calculate results
+    let correctAnswers = 0;
+    for (let i = 0; i < totalQuestions; i++) {
+        if (userAnswers[i] === selectedQuestions[i].correct) {
+            correctAnswers++;
+        }
+    }
+
+    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+    const timeUsed = Math.floor((Date.now() - startTime) / 1000);
+    const timeUsedMinutes = Math.floor(timeUsed / 60);
+    const timeUsedSeconds = timeUsed % 60;
+
+    // Show results
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+
+    document.getElementById('scoreDisplay').textContent = `${correctAnswers}/${totalQuestions}`;
+    document.getElementById('percentageDisplay').textContent = `${percentage}`;
+    document.getElementById('timeUsed').textContent = `${timeUsedMinutes}:${timeUsedSeconds.toString().padStart(2, '0')}`;
+
+    // Result message
+    let message = '';
+    if (percentage >= 90) message = '🏆 Excellent! Outstanding performance!';
+    else if (percentage >= 80) message = '🎉 Great job! Very good score!';
+    else if (percentage >= 70) message = '👍 Good work! Keep it up!';
+    else if (percentage >= 60) message = '📚 Not bad! Room for improvement.';
+    else message = '💪 Keep studying! You can do better!';
+
+    document.getElementById('resultMessage').textContent = message;
+}
+
+function restartQuiz() {
+    // Reset all variables
+    currentQuestion = 0;
+    userAnswers = [];
+    timeRemaining = 0;
+    clearInterval(timerInterval);
+
+    // Show setup screen
+    document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('setupScreen').style.display = 'block';
+}
+        // Initialize the quiz
+        document.addEventListener('DOMContentLoaded', function () {
+            // Quiz is ready
+        });
+    </script>
+</body>
+
+</html>
