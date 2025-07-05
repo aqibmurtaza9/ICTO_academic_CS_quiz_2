@@ -6421,28 +6421,32 @@ question.options.forEach((option, index) => {
 
 function selectOption(optionIndex) {
     const question = selectedQuestions[currentQuestion];
-    const correctAnswer = question.correct - 1;
-    
+    const correctAnswer = question.correct - 1;  // 1-based to 0-based conversion
+
     userAnswers[currentQuestion] = optionIndex;
 
     // Update button styles
     const buttons = document.querySelectorAll('.option-btn');
+
     buttons.forEach((btn, index) => {
         if (index === optionIndex) {
             // User's selected answer
             if (index === correctAnswer) {
-                btn.className = 'option-btn btn btn-success selected w-100 p-3'; // Green for correct
+                btn.className = 'option-btn btn btn-success selected w-100 p-3';
             } else {
-                btn.className = 'option-btn btn btn-danger selected w-100 p-3'; // Red for wrong
+                btn.className = 'option-btn btn btn-danger selected w-100 p-3';
             }
-        } else if (index === correctAnswer && optionIndex !== correctAnswer) {
-            // Highlight correct answer when user selects wrong answer
-            btn.className = 'option-btn btn btn-success w-100 p-3'; // Green for correct answer
+        } else if (index === correctAnswer) {
+            // Show correct answer if user selected wrong one
+            btn.className = 'option-btn btn btn-success w-100 p-3';
         } else {
-            btn.className = 'option-btn btn btn-outline-primary w-100 p-3'; // Default style
+            // Reset others
+            btn.className = 'option-btn btn btn-outline-primary w-100 p-3';
         }
     });
 }
+
+
 
 function previousQuestion() {
     if (currentQuestion > 0) {
